@@ -1,0 +1,78 @@
+version: "3"
+
+services:
+  oidc-controller:
+    build:
+      context: ../oidc-controller
+      dockerfile: Dockerfile
+    entrypoint: bash -c "uvicorn api.main:app --reload --host 0.0.0.0 --port 5000 --log-level info"
+    # environment:
+    #   - POSTGRESQL_HOST=${POSTGRESQL_HOST}
+    #   - POSTGRESQL_PORT=${POSTGRESQL_PORT}
+    #   - POSTGRESQL_DB=${TRACTION_PSQL_DB}
+    #   - TRACTION_DB_ADMIN=${TRACTION_PSQL_ADMIN}
+    #   - TRACTION_DB_ADMIN_PWD=${TRACTION_PSQL_ADMIN_PWD}
+    #   - TRACTION_DB_USER=${TRACTION_PSQL_USER}
+    #   - TRACTION_DB_USER_PWD=${TRACTION_PSQL_USER_PWD}
+    #   - TRACTION_API_ADMIN_USER=${TRACTION_API_ADMIN_USER}
+    #   - TRACTION_API_ADMIN_KEY=${TRACTION_API_ADMIN_KEY}
+    #   - ACAPY_ADMIN_URL=${ACAPY_ADMIN_URL}
+    #   - ACAPY_ADMIN_URL_API_KEY=${ACAPY_ADMIN_URL_API_KEY}
+    #   - ENVIRONMENT=production
+    #   - WEB_CONCURRENCY=${WEB_CONCURRENCY}
+    #   - TRACTION_HOST_URL=${TRACTION_HOST_URL}
+    #   - TRACTION_WEBHOOK_URL=${TRACTION_WEBHOOK_URL}
+    #   - TRACTION_TENANT_WEBHOOK_URL=${TRACTION_TENANT_WEBHOOK_URL}
+    #   - ACAPY_WEBHOOK_URL_API_KEY=${ACAPY_WEBHOOK_URL_API_KEY}
+    #   - ACAPY_ENDORSER_PUBLIC_DID=${ACAPY_ENDORSER_PUBLIC_DID}
+    #   - ENDORSER_CONNECTION_ALIAS=${ENDORSER_CONNECTION_ALIAS}
+    #   - ACAPY_GENESIS_URL=${ACAPY_GENESIS_URL}
+    #   - DEFAULT_RETRY_ATTEMPTS=${DEFAULT_RETRY_ATTEMPTS:-10}
+    #   - DEFAULT_PAUSE_BETWEEN_ATTEMPTS=${DEFAULT_PAUSE_BETWEEN_ATTEMPTS:-2}
+    #   - TRACTION_CORS_URLS=${TRACTION_CORS_URLS}
+    ports:
+      - ${CONTROLLER_SERVICE_PORT}:5000
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ../oidc-controller:/app:rw
+
+  keycloak:
+    image: jboss/keycloak:16.0.0
+    ports:
+      - 8180:8080
+    volumes:
+      - ./keycloak/config:/tmp
+    environment:
+      DB_VENDOR: ${KEYCLOAK_DB_VENDOR}
+      DB_ADDR: ${KEYCLOAK_DB_ADDR}
+      DB_DATABASE: ${KEYCLOAK_DB_NAME}
+      DB_USER: ${KEYCLOAK_DB_USER}
+      DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KEYCLOAK_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+      KEYCLOAK_LOGLEVEL: ${KEYCLOAK_LOGLEVEL}
+      ROOT_LOGLEVEL: ${KEYCLOAK_ROOT_LOGLEVEL}
+      KEYCLOAK_IMPORT: ${KEYCLOAK_IMPORT}
+    depends_on:
+      - keycloak-db
+    networks:
+      - vc_authn_oidc
+
+  keycloak-db:
+    image: registry.access.redhat.com/rhscl/postgresql-10-rhel7:latest
+    environment:
+      POSTGRESQL_USER: ${KEYCLOAK_DB_USER}
+      POSTGRESQL_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      POSTGRESQL_DATABASE: ${KEYCLOAK_DB_NAME}
+    volumes:
+      - keycloak-db-data:/var/lib/pgsql/data
+    networks:
+      - vc_authn_oidc
+
+networks:
+  vc_authn_oidc:
+
+volumes:
+  controller-db-data:
+  keycloak-db-data:
