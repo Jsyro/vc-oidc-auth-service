@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.core.config import settings
 
 from .routers import oidc
+from .routers import init
 
 # from api.core.exception_handlers import add_exception_handlers
 # from api.endpoints.routes.webhooks import get_webhookapp
@@ -45,6 +46,7 @@ def get_application() -> FastAPI:
 
 app = get_application()
 app.include_router(oidc.router)
+app.include_router(init.router)
 
 origins = settings.TRACTION_CORS_URLS.split(",")
 
