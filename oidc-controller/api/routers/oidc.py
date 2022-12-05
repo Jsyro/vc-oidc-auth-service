@@ -9,9 +9,8 @@ from oic.oic.message import (
     AuthorizationResponse,
     AuthorizationErrorResponse,
 )
-from pydantic import BaseModel
 from ..core.acapy import AcapyClient
-
+from ..core.aries import PresentationRequestMessage
 
 ChallengePollUri = "/vc/connect/poll"
 AuthorizeCallbackUri = "/vc/connect/callback"
@@ -21,28 +20,6 @@ VerifiedCredentialTokenUri = "/vc/connect/token"
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-
-class ServiceDecorator(BaseModel):
-    recipient_keys: List[str]
-    routing_keys: List[str]
-    service_endpoint: str
-
-
-class PresentationAttachment(BaseModel):
-    id: str
-    mime_type: str
-    data: Dict[str, str]
-
-
-class PresentationRequestMessage(BaseModel):
-    id: str
-    type: str = (
-        "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/present-proof/1.0/request-presentation"
-    )
-    request: PresentationAttachment
-    comment: str
-    service: ServiceDecorator
 
 
 @router.post(VerifiedCredentialAuthorizeUri, response_model=dict)
@@ -64,11 +41,13 @@ async def get_authorize(request: Request):
     pres_req_conf_id = model.get("pres_req_conf_id")
     logger.info(f"pres_req_conf_id={pres_req_conf_id}")
 
-    if pres_req_conf_id != "test-pres-req":
+    if pres_req_conf_id != "test-request-config":
         raise Exception("pres_req_conf_id not found")
 
     client = AcapyClient()
     presentation_request = client.create_presentation_request()
+
+    PresentationRequestMessage
 
     # TODO RETURN WEBPAGE FOR USER TO SCAN
     return f"""
@@ -80,6 +59,7 @@ async def get_authorize(request: Request):
             <h1>Look ma! HTML!</h1>
             <h3>{model.get("pres_req_conf_id")}</h3>
             <p>{presentation_request}</p>
+            <a href={model.get("redirect_url")}>redirect to app</a>
         </body>
     </html>
     """
@@ -107,3 +87,12 @@ async def post_token(request: Request):
     logger.info(f"payload ={model}")
 
     return {}
+
+
+@router.post("/vc/connect/{pid}/complete")
+async def debug_complete_pid(pid: str):
+    logger.debug(">>> debug_complete_pid")
+    logger.debug(f"completing presentation_id ={pid}")
+    # go back to redirect_url provided by the user
+
+    pass

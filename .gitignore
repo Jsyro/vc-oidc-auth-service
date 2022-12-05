@@ -124,3 +124,5 @@ dmypy.json
 .pyre/
 
 scripts/keycloak/config/hsperfdata_jboss/
+
+.vscode/settings.json

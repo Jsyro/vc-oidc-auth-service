@@ -40,7 +40,7 @@ services:
   keycloak:
     image: jboss/keycloak:16.0.0
     ports:
-      - 8180:8080
+      - 8880:8080
     volumes:
       - ./keycloak/config:/tmp
     environment:
