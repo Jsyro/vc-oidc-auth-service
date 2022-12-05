@@ -47,8 +47,6 @@ async def get_authorize(request: Request):
     client = AcapyClient()
     presentation_request = client.create_presentation_request()
 
-    PresentationRequestMessage
-
     # TODO RETURN WEBPAGE FOR USER TO SCAN
     return f"""
     <html>

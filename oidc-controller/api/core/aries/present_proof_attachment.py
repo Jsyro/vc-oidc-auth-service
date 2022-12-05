@@ -1,4 +1,5 @@
 from typing import Dict
+from pydantic import BaseModel
 
 
 class PresentProofv10Attachment(BaseModel):

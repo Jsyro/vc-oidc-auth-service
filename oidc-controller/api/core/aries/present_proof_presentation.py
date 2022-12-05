@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from . import PresentProofv10Attachment, ServiceDecorator
+from api.core.aries import PresentProofv10Attachment, ServiceDecorator
 
 
 class PresentationRequestMessage(BaseModel):
