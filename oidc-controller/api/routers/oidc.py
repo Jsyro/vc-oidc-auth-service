@@ -58,10 +58,14 @@ async def get_authorize(request: Request, state: str):
             <title>Some HTML in here</title>
         </head>
         <body>
-            <h1>Look ma! HTML!</h1>
+            <h1>AUTHORIZATION REQUEST</h1>
+            <p>request</p>
+            <p>{request.query_params._dict}</p>
+
+            <p>presentation_request</p>
             <p>{response}</p>
 
-            <p> User waits on this screen until Proof has been presented, then is redirected to</p>
+            <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
             <a href="http://localhost:5201{AuthorizeCallbackUri}?pid={msg.id}&kc_state={state}">callback url (redirect to kc)</a>
         </body>
     </html>
@@ -110,7 +114,7 @@ async def post_token(request: Request):
         "sub": "1af58203-33fa-42a6-8628-a85472a9967e",
         "t_id": "132465e4-c57f-459f-8534-e30e78484f24",
         "exp": 1970305472,
-        "nonce": "mbpg_JWIeHQt-36Z3YGPOA",
+        "nonce": "Slmn277VX-dZ05L44ew1ww",
         "aud": "keycloak",
     }
 
