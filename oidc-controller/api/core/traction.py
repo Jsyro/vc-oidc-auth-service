@@ -9,7 +9,7 @@ _client = None
 
 
 class TractionClient:
-    traction_url = "http://host.docker.internal:8031"
+    traction_url = "http://localhost:5100"
     url_prefix = "/tenant"
 
     def __init__(self):
