@@ -7,6 +7,9 @@ from oic.oic.message import (
     AuthorizationRequest,
     AccessTokenRequest,
 )
+
+from oic.utils.jwt import JWT
+
 from oic.oic.message import AccessTokenResponse, IdToken, AuthnToken
 from ..core.acapy import AcapyClient
 from ..core.aries import PresentationRequestMessage, ServiceDecorator
@@ -107,7 +110,8 @@ async def post_token(request: Request):
         "sub": "1af58203-33fa-42a6-8628-a85472a9967e",
         "t_id": "132465e4-c57f-459f-8534-e30e78484f24",
         "exp": 1970305472,
-        "aud": "vue-fe",
+        "nonce": "mbpg_JWIeHQt-36Z3YGPOA",
+        "aud": "keycloak",
     }
 
     # TODO FIND OIC CLASS THAT WILL MAKE ME THIS.
@@ -118,7 +122,7 @@ async def post_token(request: Request):
         "token_type": "bearer",
         "id_token": id_token_jwt,
         "access_token": "invalid",
-        "aud": "vue-fe",
+        "aud": "keycloak",
     }
 
     response = AccessTokenResponse().from_dict(values)
