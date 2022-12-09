@@ -18,13 +18,6 @@ class GlobalConfig(BaseSettings):
     TITLE: str = "Traction"
     DESCRIPTION: str = "A digital wallet solution for organizations"
 
-    # sub-app titles/descriptions
-    TENANT_TITLE: str = "Traction Tenant"
-    TENANT_DESCRIPTION: str = "Endpoints for Tenants of Traction"
-
-    INNKEEPER_TITLE: str = "Traction Innkeeper"
-    INNKEEPER_DESCRIPTION: str = "Endpoints for Innkeeper of Traction"
-
     ENVIRONMENT: EnvironmentEnum
     DEBUG: bool = False
     TESTING: bool = False
