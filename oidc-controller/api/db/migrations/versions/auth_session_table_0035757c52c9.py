@@ -25,7 +25,7 @@ def upgrade():
     sa.Column('created_at', postgresql.TIMESTAMP(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', postgresql.TIMESTAMP(), server_default=sa.text('now()'), nullable=False),
     sa.Column('expired_timestamp', sa.DateTime(), nullable=False),
-    sa.Column('presentation_record_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.Column('presentation_record_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('presentation_request_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('presentation_request_satisfied', sa.Boolean(), nullable=False),
     sa.Column('presentation_request', sqlmodel.sql.sqltypes.AutoString(), nullable=False),

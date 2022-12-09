@@ -29,7 +29,7 @@ class GlobalConfig(BaseSettings):
     PSQL_PORT: int = 5432  # os.environ.get("POSTGRESQL_PORT", 5432)
     PSQL_DB: str = os.environ.get("POSTGRESQL_DB", "traction")
 
-    PSQL_USER: str = os.environ.get("OIDC_CONTROLLER_DB_USER", "oidcontrolleruser")
+    PSQL_USER: str = os.environ.get("OIDC_CONTROLLER_DB_USER", "oidccontrolleruser")
     PSQL_PASS: str = os.environ.get("OIDC_CONTROLLER_DB_USER_PWD", "oidccontrollerpass")
 
     PSQL_ADMIN_USER: str = os.environ.get(

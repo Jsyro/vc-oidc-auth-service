@@ -13,3 +13,5 @@ engine = create_async_engine(
     poolclass=QueuePool,
 )
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+db = async_session()

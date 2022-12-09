@@ -59,8 +59,8 @@ async def get_authorize(request: Request, state: str):
         presentation_request_id=response["presentation_exchange_id"],
         presentation_request=json.dumps(response),
     )
-
-    session.save()
+    print(session.presentation_record_id)
+    await session.save()
 
     return f"""
     <html>

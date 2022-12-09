@@ -27,6 +27,7 @@ services:
     image: "postgres:12"
     environment:
       - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
+      - POST
     extra_hosts:
       - host.docker.internal:host-gateway
     volumes:

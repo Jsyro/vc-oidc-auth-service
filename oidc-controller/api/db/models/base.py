@@ -8,7 +8,7 @@ from sqlalchemy import Column, func, text, select, desc, String
 from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP, VARCHAR, ARRAY
 
 from sqlalchemy.exc import SQLAlchemyError
-from ..session import async_session
+from ..session import db
 
 
 class BaseModel(SQLModel):
@@ -34,11 +34,11 @@ class BaseTable(BaseModel):
         )
     )
 
-    def save(self, commit=True):
-        async_session.session.add(self)
+    async def save(self, commit=True):
+        db.add(self)
         if commit:
             try:
-                async_session.session.commit()
+                await db.commit()
             except SQLAlchemyError as e:
-                async_session.session.rollback()
+                db.rollback()
                 raise e
