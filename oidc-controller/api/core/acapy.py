@@ -62,7 +62,7 @@ class AcapyClient:
             "version": "1.0.0",
         }
 
-        logger.info(f">>> create_presentation_request")
+        logger.debug(f">>> create_presentation_request")
         resp_raw = requests.post(
             self.acapy_host + f"/present-proof/create-request",
             headers={
@@ -74,18 +74,4 @@ class AcapyClient:
         assert resp_raw.status_code == 200, resp_raw.content
         resp = json.loads(resp_raw.content)
 
-        print(resp)
         return resp
-
-
-"""
-{
-  "item": {
-    "tenant_id": "e4f74fa7-bd49-4420-85e1-1570c3b27457",
-    "name": "tests",
-    "wallet_id": "6f17e448-3088-4dcc-bf0c-06a1ed1118f3",
-    "wallet_key": "db4a8697-b17e-4c04-acee-c2442f31fbd4"
-  },
-  "links": []
-}
-"""
