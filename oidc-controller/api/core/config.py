@@ -85,10 +85,6 @@ class GlobalConfig(BaseSettings):
     # Allow CORS from a comma-separated list of origins
     TRACTION_CORS_URLS: str = os.environ.get("TRACTION_CORS_URLS", "")
 
-    # Api V1 prefix
-    API_V0_STR = "/v0"
-    API_V1_STR = "/v1"
-
     # openssl rand -hex 32
     JWT_SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
     JWT_ALGORITHM = "HS256"
