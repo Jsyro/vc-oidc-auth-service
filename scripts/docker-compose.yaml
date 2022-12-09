@@ -13,7 +13,6 @@ services:
       - POSTGRESQL_HOST=${POSTGRESQL_HOST}
       - POSTGRESQL_USER=${POSTGRESQL_USER}
       - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
-      - POSTGRESQL_PORT=${POSTGRESQL_PORT}
       - POSTGRESQL_DB=${POSTGRESQL_DB}
     ports:
       - ${CONTROLLER_SERVICE_PORT}:5000
@@ -28,8 +27,6 @@ services:
     image: "postgres:12"
     environment:
       - POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD}
-    ports:
-      - ${POSTGRESQL_PORT}:5432
     extra_hosts:
       - host.docker.internal:host-gateway
     volumes:

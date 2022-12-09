@@ -26,7 +26,7 @@ class GlobalConfig(BaseSettings):
     # the following defaults match up with default values in scripts/.env.example
     # these MUST be all set in non-local environments.
     PSQL_HOST: str = os.environ.get("POSTGRESQL_HOST", "localhost")
-    PSQL_PORT: int = os.environ.get("POSTGRESQL_PORT", 5432)
+    PSQL_PORT: int = 5432  # os.environ.get("POSTGRESQL_PORT", 5432)
     PSQL_DB: str = os.environ.get("POSTGRESQL_DB", "traction")
 
     PSQL_USER: str = os.environ.get("OIDC_CONTROLLER_DB_USER", "oidcontrolleruser")

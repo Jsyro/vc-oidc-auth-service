@@ -14,5 +14,5 @@ class AuthSession(BaseTable, table=True):
     presentation_request_id: uuid.UUID = Field(nullable=False)
     presentation_request_satisfied: bool = Field(nullable=False, default=False)
     presentation_request: str = Field()
-    request_parameters: List[str] = Field(nullable=False)
+    request_parameters: str = Field(nullable=False)
     _presentation: str = Field(nullable=False)

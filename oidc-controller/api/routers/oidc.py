@@ -1,4 +1,4 @@
-import logging
+import logging, json
 from typing import List, Dict
 
 from fastapi import APIRouter, Request
@@ -52,6 +52,15 @@ async def get_authorize(request: Request, state: str):
     response = client.create_presentation_request()
     # TODO RETURN WEBPAGE FOR USER TO SCAN
     msg = PresentationRequestMessage(id=response["presentation_exchange_id"])
+
+    session = AuthSession(
+        request_parameters=model.to_json(),
+        presentation_record_id=pres_req_conf_id,
+        presentation_request_id=response["presentation_exchange_id"],
+        presentation_request=json.dumps(response),
+    )
+
+    session.save()
 
     return f"""
     <html>
