@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.config import settings
+from api.db.models import *
 
 from .routers import oidc
 from .routers import init
