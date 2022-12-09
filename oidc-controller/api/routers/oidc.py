@@ -38,12 +38,11 @@ async def post_authorize(request: Request):
 @router.get(VerifiedCredentialAuthorizeUri, response_class=HTMLResponse)
 async def get_authorize(request: Request, state: str):
     """Called by oidc platform."""
-    logger.info(f">>> get_authorize")
+    logger.debug(f">>> get_authorize")
     model = AuthorizationRequest().from_dict(request.query_params._dict)
-    logger.info(model.verify())
+    model.verify()
 
     pres_req_conf_id = model.get("pres_req_conf_id")
-    logger.info(f"pres_req_conf_id={pres_req_conf_id}")
 
     if pres_req_conf_id != "test-request-config":
         raise Exception("pres_req_conf_id not found")
@@ -59,7 +58,6 @@ async def get_authorize(request: Request, state: str):
         presentation_request_id=response["presentation_exchange_id"],
         presentation_request=json.dumps(response),
     )
-    print(session.presentation_record_id)
     await session.save()
 
     return f"""
