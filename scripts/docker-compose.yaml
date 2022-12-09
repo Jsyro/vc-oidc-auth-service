@@ -5,7 +5,7 @@ services:
     build:
       context: ../oidc-controller
       dockerfile: Dockerfile
-    entrypoint: bash -c "uvicorn api.main:app --reload --host 0.0.0.0 --port 5000 --log-level debug"
+    entrypoint: bash -c "alembic upgrade head && uvicorn api.main:app --reload --host 0.0.0.0 --port 5000 --log-level info"
     environment:
       - POSTGRESQL_HOST=${POSTGRESQL_HOST}
       - POSTGRESQL_USER=${POSTGRESQL_USER}

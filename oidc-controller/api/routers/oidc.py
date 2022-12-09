@@ -14,6 +14,8 @@ from oic.oic.message import AccessTokenResponse, IdToken, AuthnToken
 from ..core.acapy import AcapyClient
 from ..core.aries import PresentationRequestMessage, ServiceDecorator
 
+from ..db.models.AuthSession import AuthSession
+
 ChallengePollUri = "/vc/connect/poll"
 AuthorizeCallbackUri = "/vc/connect/callback"
 VerifiedCredentialAuthorizeUri = "/vc/connect/authorize"
@@ -48,10 +50,8 @@ async def get_authorize(request: Request, state: str):
 
     client = AcapyClient()
     response = client.create_presentation_request()
-    print(response["presentation_request"])
     # TODO RETURN WEBPAGE FOR USER TO SCAN
     msg = PresentationRequestMessage(id=response["presentation_exchange_id"])
-    print(msg)
     return f"""
     <html>
         <head>

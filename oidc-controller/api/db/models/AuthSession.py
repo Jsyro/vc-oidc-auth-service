@@ -3,11 +3,11 @@ from typing import List
 from datetime import datetime
 from typing import Optional, List
 
-from api.db.models.base import BaseModel, BaseTable
+from api.db.models.base import BaseTable
 from sqlmodel import Field, JSON
 
 
-class OIDCSession(BaseModel):
+class AuthSession(BaseTable):
     class Config:
         arbitrary_types_allowed = True
 
@@ -18,4 +18,4 @@ class OIDCSession(BaseModel):
     presentation_request_satisfied: bool = Field(nullable=False, default=False)
     presentation_request: JSON = Field()
     request_parameters: List[str] = Field(nullable=False)
-    _presenation: JSON = Field(nullable=False)
+    _presentation: JSON = Field(nullable=False)
