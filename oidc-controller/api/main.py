@@ -14,16 +14,6 @@ from .routers import oidc
 from .routers import init
 from .routers import triggers
 
-# from api.core.exception_handlers import add_exception_handlers
-# from api.endpoints.routes.webhooks import get_webhookapp
-# from api.jobs import subscribe_job_list
-# from api.protocols.v1 import subscribe_protocol_listeners
-# from api.innkeeper_main import get_innkeeperapp
-# from api.services.v1.tenant_webhook_service import subscribe_webhook_events
-# from api.tasks import subscribe_task_listeners
-# from api.tenant_main import get_tenantapp
-# from acapy_wrapper.acapy_wrapper_main import get_acapy_wrapper_app
-
 
 # setup loggers
 # TODO: set config via env parameters...
