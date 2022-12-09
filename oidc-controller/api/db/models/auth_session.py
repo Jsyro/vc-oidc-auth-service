@@ -7,15 +7,12 @@ from api.db.models.base import BaseTable
 from sqlmodel import Field, JSON
 
 
-class AuthSession(BaseTable):
-    class Config:
-        arbitrary_types_allowed = True
+class AuthSession(BaseTable, table=True):
 
-    id: uuid.UUID = Field(primary_key=True)
     expired_timestamp: datetime = Field(nullable=False)
     presentation_record_id: uuid.UUID = Field(nullable=False)
     presentation_request_id: uuid.UUID = Field(nullable=False)
     presentation_request_satisfied: bool = Field(nullable=False, default=False)
-    presentation_request: JSON = Field()
+    presentation_request: str = Field()
     request_parameters: List[str] = Field(nullable=False)
-    _presentation: JSON = Field(nullable=False)
+    _presentation: str = Field(nullable=False)
