@@ -42,3 +42,8 @@ class BaseTable(BaseModel):
             except SQLAlchemyError as e:
                 db.rollback()
                 raise e
+
+    @classmethod
+    async def find_by_id(cls, id:str):
+        q_result = await db.execute(select(cls).where(cls.id == id))
+        return q_result.scalar_one_or_none()

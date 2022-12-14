@@ -53,10 +53,10 @@ async def get_authorize(request: Request, state: str):
     msg = PresentationRequestMessage(id=response["presentation_exchange_id"])
 
     session = AuthSession(
-        request_parameters=model.to_json(),
+        request_parameters=model.to_dict(),
         presentation_record_id=pres_req_conf_id,
         presentation_request_id=response["presentation_exchange_id"],
-        presentation_request=json.dumps(response),
+        presentation_request=response,
     )
     await session.save()
 
@@ -74,7 +74,7 @@ async def get_authorize(request: Request, state: str):
             <p>{response}</p>
 
             <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
-            <a href="http://localhost:5201{AuthorizeCallbackUri}?pid={msg.id}&kc_state={state}">callback url (redirect to kc)</a>
+            <a href="http://localhost:5201{AuthorizeCallbackUri}?pid={session.id}">callback url (redirect to kc)</a>
         </body>
     </html>
     """
@@ -84,7 +84,6 @@ async def get_authorize(request: Request, state: str):
 async def get_authorize_callback(
     request: Request,
     pid: str,
-    kc_state: str,
 ):
     """Called by oidc platform."""
     logger.debug(f">>> get_authorize_callback")
@@ -92,10 +91,10 @@ async def get_authorize_callback(
     # return {"url": oidc_redirect + "?state=" + kc_state}
     # url = $"{session.RequestParameters[IdentityConstants.RedirectUriParameterName]}?code={session.Id}";
     redirect_uri = "http://localhost:8880/auth/realms/vc-authn/broker/vc-authn/endpoint"
-    session_id = pid
-    state = kc_state
+    session = await AuthSession.find_by_id(pid)
 
-    url = redirect_uri + "?code=" + session_id + "&state=" + state
+
+    url = redirect_uri + "?code=" + str(session.id) + "&state="+ str(session.request_parameters["state"])
     print(url)
     return f"""
     <html>
@@ -116,13 +115,13 @@ async def post_token(request: Request):
     form = await request.form()
     # logger.info(f"payload ={form}")
     model = AccessTokenRequest().from_dict(form._dict)
-    logger.info(f"model ={model}")
-
+    session = await AuthSession.find_by_id(model.get("code"))
+    
     idtoken_payload = {
         "sub": "1af58203-33fa-42a6-8628-a85472a9967e",
         "t_id": "132465e4-c57f-459f-8534-e30e78484f24",
         "exp": 1970305472,
-        "nonce": "Slmn277VX-dZ05L44ew1ww",
+        "nonce": session.request_parameters["nonce"],
         "aud": "keycloak",
     }
 

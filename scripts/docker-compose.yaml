@@ -16,8 +16,6 @@ services:
       - POSTGRESQL_DB=${POSTGRESQL_DB}
     ports:
       - ${CONTROLLER_SERVICE_PORT}:5000
-    extra_hosts:
-      - host.docker.internal:host-gateway
     volumes:
       - ../oidc-controller:/app:rw
     networks:
@@ -76,6 +74,7 @@ services:
 
 networks:
   vc_auth:
+    driver: bridge
 
 
 volumes:

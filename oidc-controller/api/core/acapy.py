@@ -6,12 +6,11 @@ import logging
 _client = None
 logger = logging.getLogger(__name__)
 
-wallet_id = "6d506247-5bdb-4662-9309-824e85bdf712"
-wallet_key = "123b9468-38af-4896-9bb6-f33881387a79"
+wallet_id = "8b6cfe2e-b3bc-401d-879c-0de9db470142"
 
 
 class AcapyClient:
-    acapy_host = "http://host.docker.internal:8031"
+    acapy_host = "http://traction-agent:8031"
     acapy_x_api_key = "change-me"
 
     wallet_token: str = None
@@ -26,10 +25,10 @@ class AcapyClient:
         logger.info(f">>> get_wallet_token")
         resp_raw = requests.post(
             self.acapy_host + f"/multitenancy/wallet/{wallet_id}/token",
-            data={"wallet_key": wallet_key},
+            data={"wallet_key": "sample_key"},
             headers={"X-API-KEY": self.acapy_x_api_key},
         )
-        assert resp_raw.status_code == 200, resp_raw.status_code
+        assert resp_raw.status_code == 200, f"{resp_raw.status_code}::{resp_raw.content}"
         resp = json.loads(resp_raw.content)
         self.wallet_token = resp["token"]
         return self.wallet_token

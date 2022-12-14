@@ -28,8 +28,16 @@ def upgrade():
     sa.Column('presentation_record_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('presentation_request_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('presentation_request_satisfied', sa.Boolean(), nullable=False),
-    sa.Column('presentation_request', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('request_parameters', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column(
+        "presentation_request",
+        postgresql.JSON(astext_type=sa.Text()),
+        nullable=True,
+    ),
+    sa.Column(
+        "request_parameters",
+        postgresql.JSON(astext_type=sa.Text()),
+        nullable=True,
+    ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
