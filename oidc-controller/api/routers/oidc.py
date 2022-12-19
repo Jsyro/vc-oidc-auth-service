@@ -1,25 +1,26 @@
-import logging, json
+import logging, json, base64
 from typing import List, Dict
+from base64 import encodebytes
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from oic.oic.message import (
     AuthorizationRequest,
     AccessTokenRequest,
+     AccessTokenResponse, IdToken
 )
 
 from oic.utils.jwt import JWT
 
-from oic.oic.message import AccessTokenResponse, IdToken, AuthnToken
-from ..core.acapy import AcapyClient
-from ..core.aries import PresentationRequestMessage, ServiceDecorator
+from ..core.acapy.client import AcapyClient
+from ..core.aries import PresentationRequestMessage, ServiceDecorator, PresentProofv10Attachment
 
-from ..db.models import AuthSession
+from ..db.models import AuthSession, PresentationConfiguration
 
-ChallengePollUri = "/vc/connect/poll"
-AuthorizeCallbackUri = "/vc/connect/callback"
-VerifiedCredentialAuthorizeUri = "/vc/connect/authorize"
-VerifiedCredentialTokenUri = "/vc/connect/token"
+ChallengePollUri = "/poll"
+AuthorizeCallbackUri = "/callback"
+VerifiedCredentialAuthorizeUri = "/authorize"
+VerifiedCredentialTokenUri = "/token"
 
 logger = logging.getLogger(__name__)
 
@@ -39,19 +40,57 @@ async def post_authorize(request: Request):
 async def get_authorize(request: Request, state: str):
     """Called by oidc platform."""
     logger.debug(f">>> get_authorize")
+
+
+    req_dict = {
+            "auto_verify": False,
+            "comment": "string",
+            "proof_request": {
+                "name": "Proof request",
+                "requested_attributes": {
+                    "prop1": {
+                        "name": "first_name",
+                        "non_revoked": {},
+                        "restrictions": [],
+                    },
+                    "prop2": {
+                        "name": "last_name",
+                        "non_revoked": {},
+                        "restrictions": [],
+                    },
+                },
+                "requested_predicates": {},
+                "non_revoked": {},
+            },
+            "name": "test_pres_conf",
+            "version": "1.0.0",
+        }
+    # Verify OIDC forward payload
     model = AuthorizationRequest().from_dict(request.query_params._dict)
     model.verify()
 
+    # Load pres_req_conf_id
     pres_req_conf_id = model.get("pres_req_conf_id")
+    pres_config = await PresentationConfiguration.find_by_pres_req_conf_id(pres_req_conf_id)
+    pres_req = pres_config.presentation_request_configuration if pres_config else req_dict
 
-    if pres_req_conf_id != "test-request-config":
-        raise Exception("pres_req_conf_id not found")
-
+    # Create presentation_request to show on screen
     client = AcapyClient()
-    response = client.create_presentation_request()
-    # TODO RETURN WEBPAGE FOR USER TO SCAN
-    msg = PresentationRequestMessage(id=response["presentation_exchange_id"])
+    response = client.create_presentation_request(pres_req)
 
+    #build payload
+    attachment = PresentProofv10Attachment(data={"base64":base64.b64encode(json.dumps(response["presentation_request"]).encode("utf-8"))})
+
+    #register and save public did
+    public_did = client.get_wallet_public_did().result
+    service_endpoint = "https://26ab-165-225-211-70.ngrok.io" #from ngrok
+   
+
+    s_d = ServiceDecorator(service_endpoint=service_endpoint, recipient_keys=[public_did.verkey])
+    #bundle everything needed for the QR code
+    msg = PresentationRequestMessage(id=response["presentation_exchange_id"], request=attachment, service=s_d)
+
+    #save OIDC AuthSession
     session = AuthSession(
         request_parameters=model.to_dict(),
         presentation_record_id=pres_req_conf_id,
@@ -59,6 +98,7 @@ async def get_authorize(request: Request, state: str):
         presentation_request=response,
     )
     await session.save()
+
 
     return f"""
     <html>
@@ -74,7 +114,13 @@ async def get_authorize(request: Request, state: str):
             <p>{response}</p>
 
             <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
-            <a href="http://localhost:5201{AuthorizeCallbackUri}?pid={session.id}">callback url (redirect to kc)</a>
+            <a href="http://localhost:5201/vc/connect{AuthorizeCallbackUri}?pid={session.id}">callback url (redirect to kc)</a>
+
+            <p> Packaged with the appropriate aries requirement</p>
+            <p>{msg.dict()}</p>
+
+
+
         </body>
     </html>
     """
@@ -93,13 +139,12 @@ async def get_authorize_callback(
     redirect_uri = "http://localhost:8880/auth/realms/vc-authn/broker/vc-authn/endpoint"
     session = await AuthSession.find_by_id(pid)
 
-
     url = redirect_uri + "?code=" + str(session.id) + "&state="+ str(session.request_parameters["state"])
     print(url)
     return f"""
     <html>
         <head>
-            <title>resulting redirect</title>
+            <title>Resulting redirect</title>
         </head>
         <body>
             <a href="{url}">{url}</a>
@@ -139,14 +184,6 @@ async def post_token(request: Request):
     response = AccessTokenResponse().from_dict(values)
     return response
 
-
-@router.post("/vc/connect/{pid}/complete")
-async def debug_complete_pid(pid: str):
-    logger.debug(">>> debug_complete_pid")
-    logger.debug(f"completing presentation_id ={pid}")
-    # go back to redirect_url provided by the user
-
-    pass
 
 
 """

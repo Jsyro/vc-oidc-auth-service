@@ -11,8 +11,7 @@ from api.core.config import settings
 from api.db.models import *
 
 from .routers import oidc
-from .routers import init
-from .routers import triggers
+from .routers import configs
 
 
 # setup loggers
@@ -37,9 +36,8 @@ def get_application() -> FastAPI:
 
 
 app = get_application()
-app.include_router(oidc.router)
-app.include_router(init.router)
-app.include_router(triggers.router)
+app.include_router(oidc.router, prefix="/vc/connect",tags=["oidc"])
+app.include_router(configs.router, prefix="/configs", tags=["configs"])
 
 origins = settings.TRACTION_CORS_URLS.split(",")
 
