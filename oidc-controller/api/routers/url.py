@@ -35,7 +35,7 @@ async def get_url(
             "~service": {
                 "recipientKeys": ["HqnSR3Nic6R8X6S9LVC21yvDq4okqBQne6LLCbrqT9Rj"],
                 "routingKeys": None,
-                "serviceEndpoint": "https://80aa-165-225-211-70.ngrok.io",
+                "serviceEndpoint": "https://2b8d-165-225-211-70.ngrok.io",
             },
         }
     )

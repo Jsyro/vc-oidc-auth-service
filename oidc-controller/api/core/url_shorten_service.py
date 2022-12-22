@@ -5,7 +5,7 @@ from ..db.models import ShortenedURL
 
 logger = logging.getLogger(__name__)
 
-controller_host = "https://c15c-165-225-211-70.ngrok.io"
+controller_host = "https://1d7e-165-225-211-70.ngrok.io"
 
 
 async def resolve_url(id: UUID):
