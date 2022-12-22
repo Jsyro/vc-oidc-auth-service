@@ -72,6 +72,17 @@ services:
     networks:
       - vc_auth
 
+  ngrok-oidc-controller:
+    image: wernight/ngrok
+    environment:
+      - CONTROLLER_SERVICE_PORT=5000
+      - NGROK_AUTH=1ocYbDCXoYyHcrhOMkLS6njK4c5_3Xv5HhoRYFf3kqq4NCfGq
+    ports:
+      - 4056:4040
+    command: ngrok http oidc-controller:5000 --log stdout
+    networks:
+      - vc_auth
+
 networks:
   vc_auth:
     driver: bridge
