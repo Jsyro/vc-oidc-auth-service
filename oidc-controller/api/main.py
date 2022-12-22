@@ -13,7 +13,7 @@ from api.db.models import *
 from .routers import oidc
 from .routers import configs
 from .routers import acapy_handler
-from .routers import url
+from .routers import presentation_request
 
 # setup loggers
 # TODO: set config via env parameters...
@@ -42,7 +42,7 @@ app.include_router(
     oidc.router, prefix="/vc/connect", tags=["oidc"], include_in_schema=False
 )
 app.include_router(acapy_handler.router, include_in_schema=False)
-app.include_router(url.router, include_in_schema=False)
+app.include_router(presentation_request.router, include_in_schema=False)
 
 origins = settings.TRACTION_CORS_URLS.split(",")
 

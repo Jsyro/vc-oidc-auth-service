@@ -84,7 +84,7 @@ async def get_authorize(request: Request, state: str):
 
     # Create presentation_request to show on screen
     response = client.create_presentation_request(pres_req)
-    logger.warn(response)
+
     # save OIDC AuthSession
     session = AuthSession(
         request_parameters=model.to_dict(),
@@ -104,7 +104,6 @@ async def get_authorize(request: Request, state: str):
     # CREATE an image?
     buff = io.BytesIO()
     qrcode.make(url_to_message).save(buff, format="PNG")
-    # qrcode.make(qr_content).save(buff, format="PNG")
     image_contents = base64.b64encode(buff.getvalue()).decode("utf-8")
 
     return f"""
