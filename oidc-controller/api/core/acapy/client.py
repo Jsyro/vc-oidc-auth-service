@@ -78,7 +78,7 @@ class AcapyClient:
     wallet_id = "c6a6cdc2-723d-4368-b249-d046f40a7656"
     acapy_host = "http://traction-agent:8031"
     acapy_x_api_key = "change-me"
-    service_endpoint = "https://80aa-165-225-211-70.ngrok.io"  # from ngrok
+    service_endpoint = "https://2b8d-165-225-211-70.ngrok.io"  # from ngrok
 
     # wallet_id = "30d938ed-2708-46b7-860e-1a1b77ad7da4"
     # acapy_host = "https://traction-acapy-admin-test.apps.silver.devops.gov.bc.ca/"

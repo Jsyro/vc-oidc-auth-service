@@ -20,7 +20,6 @@ from ..core.aries import (
     PresentProofv10Attachment,
 )
 from ..core.oidc.issue_token_service import Token
-from ..core.url_shorten_service import create_url
 from ..db.models import AuthSession, PresentationConfiguration
 
 
@@ -74,8 +73,6 @@ async def get_authorize(request: Request, state: str):
 
     client = AcapyClient()
 
-    service_endpoint = client.service_endpoint
-
     # Load pres_req_conf_id
     pres_req_conf_id = model.get("pres_req_conf_id")
     pres_config = await PresentationConfiguration.find_by_pres_req_conf_id(
@@ -87,44 +84,7 @@ async def get_authorize(request: Request, state: str):
 
     # Create presentation_request to show on screen
     response = client.create_presentation_request(pres_req)
-    # logger.info(response)
-
-    public_did = client.get_wallet_public_did()
-
-    s_d = ServiceDecorator(
-        service_endpoint=service_endpoint, recipient_keys=[public_did.verkey]
-    )
-
-    # build payload
-
-    # build message like acapy demo.
-    logger.info(response.presentation_exchange_id)
-    response2 = client.get_presentation_request(response.presentation_exchange_id)
-    pres_exch_txn = response2["presentation_request_dict"]
-    pres_exch_txn["~service"] = s_d.dict()
-    obj_json_str = json.dumps(pres_exch_txn)
-    obj_json_b64 = base64.urlsafe_b64encode(obj_json_str.encode("ascii"))
-    qr_content_acapy_test_style = (
-        service_endpoint + "?m=" + obj_json_b64.decode("ascii")
-    )
-    logger.info("qr_content_acapy_test_style")
-    # logger.info(qr_content_acapy_test_style)
-
-    # register and save public did
-    known_good_attachment = PresentProofv10Attachment(
-        data={
-            "base64": "eyJuYW1lIjoiY2l0ei12ZXJpZmllZC1wZXJzb24iLCJuYW1lcyI6bnVsbCwidmVyc2lvbiI6IjAuMS4wIiwibm9uY2UiOiI5MDA2ODgwODE5NTcwMDcyMTQ5Mjc2ODAiLCJyZXF1ZXN0ZWRfYXR0cmlidXRlcyI6eyIzNjYxZTg5Yi02NTRkLTQ2OTUtODczZC0zMjMxNjRiZTQyZWIiOnsibmFtZXMiOlsiZ2l2ZW5OYW1lIiwiYWRkaXRpb25hbE5hbWUiLCJmYW1pbHlOYW1lIiwiZGF0ZU9mQmlydGgiLCJzdHJlZXRBZGRyZXNzIiwicG9zdGFsQ29kZSIsImxvY2FsaXR5IiwicmVnaW9uIiwiY291bnRyeSIsInBob25lTnVtYmVyIiwiYWx0ZXJuYXRlUGhvbmVOdW1iZXIiLCJlbWFpbCIsImdlbmRlciIsImlzc3VlciIsImlzc3VlRGF0ZSIsImV4cGlyYXRpb25EYXRlIiwiSWRlbnRpdHlMZXZlbE9mQXNzdXJhbmNlIl0sInJlc3RyaWN0aW9ucyI6W3sic2NoZW1hX2lzc3Vlcl9kaWQiOiI2NkFnTDlOSms4cDliQnB6WG1YS2Q5Iiwic2NoZW1hX25hbWUiOiJ2ZXJpZmllZF9wZXJzb24iLCJzY2hlbWFfdmVyc2lvbiI6IjAuMS4yIn1dfX0sInJlcXVlc3RlZF9wcmVkaWNhdGVzIjp7fX0="
-        }
-    )
-    # bundle everything needed for the QR code
-    byo_attachment = PresentProofv10Attachment.build(response.presentation_request)
-
-    msg = PresentationRequestMessage(
-        id=response.thread_id,
-        request=[byo_attachment],
-        service=s_d,
-    )
-    logger.warning(msg.dict(by_alias=True))
+    logger.warn(response)
     # save OIDC AuthSession
     session = AuthSession(
         request_parameters=model.to_dict(),
@@ -135,27 +95,15 @@ async def get_authorize(request: Request, state: str):
     await session.save()
 
     # QR CONTENTS
-    qr_content = service_endpoint + "?m=" + msg.b64_str()
-    logger.info("qr_content_vcauthn_style")
-    # logger.info(qr_content)
+    controller_host = "https://1d7e-165-225-211-70.ngrok.io"
 
-    KNOWN_WORKING_QR_HOST = (
-        "https://toip-vc-authn-controller-test.apps.silver.devops.gov.bc.ca/?m="
+    url_to_message = (
+        controller_host + "/url/pres_req/" + str(session.presentation_request_id)
     )
-    KNOWN_WORKING_QR = "eyJAaWQiOiJlNjZhYmE5My1mZDhjLTQwNmUtYjYzZi1jZGI0NDQ5NGNkZjUiLCJAdHlwZSI6ImRpZDpzb3Y6QnpDYnNOWWhNcmpIaXFaRFRVQVNIZztzcGVjL3ByZXNlbnQtcHJvb2YvMS4wL3JlcXVlc3QtcHJlc2VudGF0aW9uIiwicmVxdWVzdF9wcmVzZW50YXRpb25zfmF0dGFjaCI6W3siQGlkIjoibGliaW5keS1yZXF1ZXN0LXByZXNlbnRhdGlvbi0wIiwibWltZS10eXBlIjoiYXBwbGljYXRpb24vanNvbiIsImRhdGEiOnsiYmFzZTY0IjoiZXlKdVlXMWxJam9pWTJsMGVpMTJaWEpwWm1sbFpDMXdaWEp6YjI0aUxDSnVZVzFsY3lJNmJuVnNiQ3dpZG1WeWMybHZiaUk2SWpBdU1TNHdJaXdpYm05dVkyVWlPaUl4T1RrNU56SXpOelEwTlRnd056STRNRFF4TlRnek1ETWlMQ0p5WlhGMVpYTjBaV1JmWVhSMGNtbGlkWFJsY3lJNmV5SXdaRFV3TjJVd05TMW1NREl4TFRRd01XSXRZakExWlMwek9URTBaRE5oWlRVeVlqQWlPbnNpYm1GdFpYTWlPbHNpWjJsMlpXNU9ZVzFsSWl3aVlXUmthWFJwYjI1aGJFNWhiV1VpTENKbVlXMXBiSGxPWVcxbElpd2laR0YwWlU5bVFtbHlkR2dpTENKemRISmxaWFJCWkdSeVpYTnpJaXdpY0c5emRHRnNRMjlrWlNJc0lteHZZMkZzYVhSNUlpd2ljbVZuYVc5dUlpd2lZMjkxYm5SeWVTSXNJbkJvYjI1bFRuVnRZbVZ5SWl3aVlXeDBaWEp1WVhSbFVHaHZibVZPZFcxaVpYSWlMQ0psYldGcGJDSXNJbWRsYm1SbGNpSXNJbWx6YzNWbGNpSXNJbWx6YzNWbFJHRjBaU0lzSW1WNGNHbHlZWFJwYjI1RVlYUmxJaXdpU1dSbGJuUnBkSGxNWlhabGJFOW1RWE56ZFhKaGJtTmxJbDBzSW5KbGMzUnlhV04wYVc5dWN5STZXM3NpYzJOb1pXMWhYMmx6YzNWbGNsOWthV1FpT2lJMk5rRm5URGxPU21zNGNEbGlRbkI2V0cxWVMyUTVJaXdpYzJOb1pXMWhYMjVoYldVaU9pSjJaWEpwWm1sbFpGOXdaWEp6YjI0aUxDSnpZMmhsYldGZmRtVnljMmx2YmlJNklqQXVNUzR5SW4xZGZYMHNJbkpsY1hWbGMzUmxaRjl3Y21Wa2FXTmhkR1Z6SWpwN2ZYMD0ifX1dLCJjb21tZW50IjpudWxsLCJ-c2VydmljZSI6eyJyZWNpcGllbnRLZXlzIjpbIkhHZVVURnVaQ00xZjJGdWJWbllHYzF4QWhnQVBFekJGUVJjZnhjcE5qV2JtIl0sInJvdXRpbmdLZXlzIjpudWxsLCJzZXJ2aWNlRW5kcG9pbnQiOiJodHRwczovL3RvaXAtdmMtYXV0aG4tYWdlbnQtdGVzdC5hcHBzLnNpbHZlci5kZXZvcHMuZ292LmJjLmNhIn19"
-
-    vcauthn_message = "https://toip-vc-authn-controller-test.apps.silver.devops.gov.bc.ca?m=eyJAaWQiOiI2MGJhMWU5Ny1jZDA2LTQ5OGQtODQ3Mi1kNDUyOTlhN2I5MzkiLCJAdHlwZSI6ImRpZDpzb3Y6QnpDYnNOWWhNcmpIaXFaRFRVQVNIZztzcGVjL3ByZXNlbnQtcHJvb2YvMS4wL3JlcXVlc3QtcHJlc2VudGF0aW9uIiwicmVxdWVzdF9wcmVzZW50YXRpb25zfmF0dGFjaCI6W3siQGlkIjoibGliaW5keS1yZXF1ZXN0LXByZXNlbnRhdGlvbi0wIiwibWltZS10eXBlIjoiYXBwbGljYXRpb24vanNvbiIsImRhdGEiOnsiYmFzZTY0IjoiZXlKdVlXMWxJam9pWTJsMGVpMTJaWEpwWm1sbFpDMXdaWEp6YjI0aUxDSnVZVzFsY3lJNmJuVnNiQ3dpZG1WeWMybHZiaUk2SWpBdU1TNHdJaXdpYm05dVkyVWlPaUl4TVRjM09EZzFOREF6TWpJM016STBOVFl3TXpFd01UazJJaXdpY21WeGRXVnpkR1ZrWDJGMGRISnBZblYwWlhNaU9uc2lObVV4TXpZMU5UQXRaVEF6TlMwME5UWTRMV0kyWlRVdE1qUmlaR0kxTWpjd01XUTBJanA3SW01aGJXVnpJanBiSW1kcGRtVnVUbUZ0WlNJc0ltRmtaR2wwYVc5dVlXeE9ZVzFsSWl3aVptRnRhV3g1VG1GdFpTSXNJbVJoZEdWUFprSnBjblJvSWl3aWMzUnlaV1YwUVdSa2NtVnpjeUlzSW5CdmMzUmhiRU52WkdVaUxDSnNiMk5oYkdsMGVTSXNJbkpsWjJsdmJpSXNJbU52ZFc1MGNua2lMQ0p3YUc5dVpVNTFiV0psY2lJc0ltRnNkR1Z5Ym1GMFpWQm9iMjVsVG5WdFltVnlJaXdpWlcxaGFXd2lMQ0puWlc1a1pYSWlMQ0pwYzNOMVpYSWlMQ0pwYzNOMVpVUmhkR1VpTENKbGVIQnBjbUYwYVc5dVJHRjBaU0lzSWtsa1pXNTBhWFI1VEdWMlpXeFBaa0Z6YzNWeVlXNWpaU0pkTENKeVpYTjBjbWxqZEdsdmJuTWlPbHQ3SW5OamFHVnRZVjlwYzNOMVpYSmZaR2xrSWpvaU5qWkJaMHc1VGtwck9IQTVZa0p3ZWxodFdFdGtPU0lzSW5OamFHVnRZVjl1WVcxbElqb2lkbVZ5YVdacFpXUmZjR1Z5YzI5dUlpd2ljMk5vWlcxaFgzWmxjbk5wYjI0aU9pSXdMakV1TWlKOVhYMTlMQ0p5WlhGMVpYTjBaV1JmY0hKbFpHbGpZWFJsY3lJNmUzMTkifX1dLCJjb21tZW50IjpudWxsLCJ-c2VydmljZSI6eyJyZWNpcGllbnRLZXlzIjpbIkhHZVVURnVaQ00xZjJGdWJWbllHYzF4QWhnQVBFekJGUVJjZnhjcE5qV2JtIl0sInJvdXRpbmdLZXlzIjpudWxsLCJzZXJ2aWNlRW5kcG9pbnQiOiJodHRwczovL3RvaXAtdmMtYXV0aG4tYWdlbnQtdGVzdC5hcHBzLnNpbHZlci5kZXZvcHMuZ292LmJjLmNhIn19"
-    logger.info("vcauthn_message")
-    # logger.info(vcauthn_message)
-
-    url = qr_content
-    logger.info(url)
-
-    short_url = await create_url(url)
 
     # CREATE an image?
     buff = io.BytesIO()
-    qrcode.make(short_url).save(buff, format="PNG")
+    qrcode.make(url_to_message).save(buff, format="PNG")
     # qrcode.make(qr_content).save(buff, format="PNG")
     image_contents = base64.b64encode(buff.getvalue()).decode("utf-8")
 
@@ -169,10 +117,7 @@ async def get_authorize(request: Request, state: str):
             <p>request to be save as AuthSession</p>
             <p>{request.query_params._dict}</p>
 
-            <p><img src="data:image/jpeg;base64,{image_contents}" alt="{image_contents}" width="600px" height="600px" /></p>
-            <p>{short_url}</p>
-            <p>{url}</p>
-
+            <p><img src="data:image/jpeg;base64,{image_contents}" alt="{image_contents}" width="300px" height="300px" /></p>
 
             <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
             <a href="http://localhost:5201/vc/connect{AuthorizeCallbackUri}?pid={session.id}">callback url (redirect to kc)</a>
