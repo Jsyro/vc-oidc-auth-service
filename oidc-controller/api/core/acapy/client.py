@@ -99,7 +99,7 @@ class AcapyClient:
         super().__init__()
 
     def get_wallet_token(self):
-        logger.info(f">>> get_wallet_token")
+        logger.debug(f">>> get_wallet_token")
         resp_raw = requests.post(
             self.acapy_host + f"/multitenancy/wallet/{self.wallet_id}/token",
             data={"wallet_key": "sample_key"},
@@ -110,15 +110,17 @@ class AcapyClient:
         ), f"{resp_raw.status_code}::{resp_raw.content}"
         resp = json.loads(resp_raw.content)
         self.wallet_token = resp["token"]
+        logger.debug(f"<<< get_wallet_token")
+
         return self.wallet_token
 
     def create_presentation_request(
         self, presentation_request_configuration: dict
     ) -> CreatePresentationResponse:
+        logger.debug(f">>> create_presentation_request")
         if not self.wallet_token:
             self.get_wallet_token()
 
-        logger.debug(f">>> create_presentation_request")
         resp_raw = requests.post(
             self.acapy_host + CREATE_PRESENTATION_REQUEST_URL,
             headers={
@@ -131,15 +133,14 @@ class AcapyClient:
         resp = json.loads(resp_raw.content)
         result = CreatePresentationResponse.parse_obj(resp)
 
-        logger.info(result)
         logger.debug(f"<<< create_presenation_request")
         return result
 
     def get_presentation_request(self, presentation_exchange_id: UUID):
+        logger.debug(f">>> get_presentation_request")
         if not self.wallet_token:
             self.get_wallet_token()
 
-        logger.debug(f">>> get_presentation_request")
         resp_raw = requests.get(
             self.acapy_host
             + PRESENT_PROOF_RECORDS
@@ -153,9 +154,34 @@ class AcapyClient:
         assert resp_raw.status_code == 200, resp_raw.content
         resp = json.loads(resp_raw.content)
 
+        logger.debug(f"<<< get_presentation_request -> {resp}")
+        return resp
+
+    def verify_presentation(self, presentation_exchange_id: UUID):
+        logger.debug(f">>> verify_presentation")
+        if not self.wallet_token:
+            self.get_wallet_token()
+
+        resp_raw = requests.post(
+            self.acapy_host
+            + PRESENT_PROOF_RECORDS
+            + "/"
+            + str(presentation_exchange_id)
+            + "/verify-presentation",
+            headers={
+                "X-API-KEY": self.acapy_x_api_key,
+                "Authorization": "Bearer " + self.wallet_token,
+            },
+        )
+        assert resp_raw.status_code == 200, resp_raw.content
+        resp = json.loads(resp_raw.content)
+
+        logger.debug(f"<<< verify_presentation -> {resp}")
         return resp
 
     def get_wallet_public_did(self) -> WalletPublicDid:
+        logger.debug(f">>> get_wallet_public_did")
+
         if not self.wallet_token:
             self.get_wallet_token()
         resp_raw = requests.get(
@@ -171,11 +197,5 @@ class AcapyClient:
         resp = json.loads(resp_raw.content)
         public_did = WalletPublicDid.parse_obj(resp["result"])
 
-        # force_did = WalletPublicDid(
-        #     did="FYAjq8xXorZtexJniU7fzH",
-        #     verkey="8vZCafo36X1HnM97QiMpf7Ae2Pm4yYJAFZSp2BnN6AaQ",
-        #     posture="public",
-        # )
-
-        logger.info(public_did)
+        logger.debug(f"<<< get_wallet_public_did -> {public_did}")
         return public_did

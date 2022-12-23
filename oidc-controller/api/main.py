@@ -41,7 +41,7 @@ app.include_router(configs.router, prefix="/configs", tags=["configs"])
 app.include_router(
     oidc.router, prefix="/vc/connect", tags=["oidc"], include_in_schema=False
 )
-app.include_router(acapy_handler.router, include_in_schema=False)
+app.include_router(acapy_handler.router, prefix="/webhooks", include_in_schema=False)
 app.include_router(presentation_request.router, include_in_schema=False)
 
 origins = settings.TRACTION_CORS_URLS.split(",")

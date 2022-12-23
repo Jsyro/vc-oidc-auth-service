@@ -46,7 +46,6 @@ async def post_authorize(request: Request):
 async def get_authorize(request: Request, state: str):
     """Called by oidc platform."""
     logger.debug(f">>> get_authorize")
-    logger.warning(request.headers)
     req_dict = {
         "auto_verify": False,
         "comment": "AWDAWD",
@@ -96,7 +95,6 @@ async def get_authorize(request: Request, state: str):
 
     # QR CONTENTS
     controller_host = "https://1d7e-165-225-211-70.ngrok.io"
-
     url_to_message = (
         controller_host + "/url/pres_req/" + str(session.presentation_request_id)
     )
