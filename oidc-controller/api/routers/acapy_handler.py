@@ -44,6 +44,9 @@ async def post_topic(request: Request, topic: str):
             if webhook_body["state"] == "verified":
                 logger.info("VERIFIED")
                 session.presentation_request_satisfied = True
+                # update presentation_exchange record
+                session.presentation_request = webhook_body
+
                 await session.save()
 
             pass

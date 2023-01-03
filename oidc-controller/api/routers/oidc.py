@@ -1,10 +1,7 @@
 import logging, json, base64, io
-from typing import List, Dict
-from base64 import encodebytes
-from PIL import Image
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from oic.oic.message import (
     AuthorizationRequest,
     AccessTokenRequest,
@@ -14,11 +11,6 @@ from oic.oic.message import (
 import qrcode
 
 from ..core.acapy.client import AcapyClient
-from ..core.aries import (
-    PresentationRequestMessage,
-    ServiceDecorator,
-    PresentProofv10Attachment,
-)
 from ..core.oidc.issue_token_service import Token
 from ..db.models import AuthSession, PresentationConfiguration
 
@@ -94,7 +86,7 @@ async def get_authorize(request: Request, state: str):
     await session.save()
 
     # QR CONTENTS
-    controller_host = "https://1d7e-165-225-211-70.ngrok.io"
+    controller_host = "https://b4d4-165-225-211-70.ngrok.io"
     url_to_message = (
         controller_host + "/url/pres_req/" + str(session.presentation_request_id)
     )
@@ -111,15 +103,12 @@ async def get_authorize(request: Request, state: str):
         </head>
         <body>
             <h1>AUTHORIZATION REQUEST</h1>
-            <p>request to be save as AuthSession</p>
-            <p>{request.query_params._dict}</p>
 
+            <p>Scan this QR code for a connectionless present-proof request</p>
             <p><img src="data:image/jpeg;base64,{image_contents}" alt="{image_contents}" width="300px" height="300px" /></p>
 
             <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
             <a href="http://localhost:5201/vc/connect{AuthorizeCallbackUri}?pid={session.id}">callback url (redirect to kc)</a>
-
-
         </body>
     </html>
     """
@@ -172,8 +161,11 @@ async def post_token(request: Request):
     presentation = client.get_presentation_request(session.presentation_request_id)
 
     claims = Token.get_claims(presentation, session)
-    Token(issuer="", audiences=["keycloak"], lifetime=10000, claims=claims)
-    # logger.info(presentation)
+    claims = {c.type: c for c in claims}
+
+    token = Token(
+        issuer="placeholder", audiences=["keycloak"], lifetime=10000, claims=claims
+    )
 
     idtoken_payload = {
         "sub": "1af58203-33fa-42a6-8628-a85472a9967e",
@@ -182,9 +174,15 @@ async def post_token(request: Request):
         "nonce": session.request_parameters["nonce"],
         "aud": "keycloak",
     }
-
-    id_token = IdToken().from_dict(idtoken_payload)
+    logger.warn("WORKING EXAMPLE:")
+    logger.warn(IdToken().from_dict(idtoken_payload))
+    id_token = IdToken().from_dict(
+        token.idtoken_dict(session.request_parameters["nonce"])
+    )
+    logger.warn(session.request_parameters["nonce"])
+    logger.info(id_token)
     id_token_jwt = id_token.to_jwt()
+    logger.info(id_token_jwt)
 
     values = {
         "token_type": "bearer",
@@ -194,6 +192,7 @@ async def post_token(request: Request):
     }
 
     response = AccessTokenResponse().from_dict(values)
+    logger.info(response)
     return response
 
 
