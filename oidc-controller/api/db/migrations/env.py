@@ -9,7 +9,7 @@ from alembic import context
 sys.path = ["", ".."] + sys.path[1:]  # TODO: Fix it
 
 from api.core.config import settings  # noqa
-from api.db.models import BaseSQLModel  # noqa
+from api.core.models import BaseSQLModel  # noqa
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_ADMIN_URI)

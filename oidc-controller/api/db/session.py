@@ -20,9 +20,3 @@ async def get_async_session():
     )
     async with async_session() as session:
         yield session
-
-
-async_session2 = sessionmaker(
-    bind=async_engine, class_=AsyncSession, expire_on_commit=False
-)
-db: AsyncSession = async_session2()

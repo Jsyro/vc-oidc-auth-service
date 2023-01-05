@@ -22,7 +22,6 @@ router = APIRouter()
 
 @router.get("/url/pres_exch/{pres_exch_id}")
 async def send_connectionless_proof_req(
-    request: Request,
     pres_exch_id: str,
     session: AsyncSession = Depends(get_async_session),
 ):

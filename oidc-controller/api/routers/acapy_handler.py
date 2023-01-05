@@ -1,5 +1,4 @@
 import logging, json
-from typing import List, Dict
 
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,15 +13,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# @router.post("/{apiKey}/topic/{topic}")
-# async def post_topic_with_api_key(request: Request):
-#     """Called by oidc platform."""
-#     logger.debug(f">>> post_topic_with_api_key")
-#     logger.debug(f"payload ={request}")
-
-#     return {}
-
-
 async def _parse_webhook_body(request: Request):
     return json.loads((await request.body()).decode("ascii"))
 
@@ -33,7 +23,7 @@ async def post_topic(
     topic: str,
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Called by oidc platform."""
+    """Called by aca-py agent."""
     logger.info(f">>> post_topic : topic={topic}")
     client = AcapyClient()
     match topic:
@@ -59,7 +49,7 @@ async def post_topic(
                 )
 
             pass
-        case other:
+        case _:
             logger.debug("skipping webhook")
 
     return {}

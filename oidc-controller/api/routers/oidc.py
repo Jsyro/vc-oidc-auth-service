@@ -17,7 +17,6 @@ from ..db.session import get_async_session
 
 from ..core.acapy.client import AcapyClient
 from ..core.oidc.issue_token_service import Token
-from ..authSessions.models import AuthSession
 from ..authSessions.crud import AuthSessionCRUD, AuthSessionCreate
 from ..verificationConfigs.crud import VerificationConfigCRUD
 
@@ -112,8 +111,7 @@ async def get_authorize_callback(
     """Called by oidc platform."""
     logger.debug(f">>> get_authorize_callback")
     logger.debug(f"payload ={request}")
-    # return {"url": oidc_redirect + "?state=" + kc_state}
-    # url = $"{session.RequestParameters[IdentityConstants.RedirectUriParameterName]}?code={session.Id}";
+
     redirect_uri = "http://localhost:8880/auth/realms/vc-authn/broker/vc-authn/endpoint"
 
     auth_sessions = AuthSessionCRUD(session)
@@ -162,20 +160,9 @@ async def post_token(
         issuer="placeholder", audiences=["keycloak"], lifetime=10000, claims=claims
     )
 
-    idtoken_payload = {
-        "sub": "1af58203-33fa-42a6-8628-a85472a9967e",
-        "t_id": "132465e4-c57f-459f-8534-e30e78484f24",
-        "exp": 1970305472,
-        "nonce": auth_session.request_parameters["nonce"],
-        "aud": "keycloak",
-    }
-    logger.warn("WORKING EXAMPLE:")
-    logger.warn(IdToken().from_dict(idtoken_payload))
     id_token = IdToken().from_dict(
         token.idtoken_dict(auth_session.request_parameters["nonce"])
     )
-    logger.warn(auth_session.request_parameters["nonce"])
-    logger.info(id_token)
     id_token_jwt = id_token.to_jwt()
     logger.info(id_token_jwt)
 
@@ -189,32 +176,3 @@ async def post_token(
     response = AccessTokenResponse().from_dict(values)
     logger.info(response)
     return response
-
-
-"""
-http://localhost:5201/vc/connect/authorize
-?scope=openid+vc_authn
-&state=_hvuRgN3Y5fQ5CXcVNCCdHGb0Th3oRgzBFW0vARteQI.2ulcZG7w9GE.vue-fe
-&response_type=code
-&client_id=keycloak
-&redirect_uri=http://localhost:8880/auth/realms/vc-authn/broker/vc-authn/endpoint
-&pres_req_conf_id=test-request-config
-&nonce=toBFYquhVRQPeKCCi9NtKw
-"""
-
-idtoken = (
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYWY1ODIwMy0zM2ZhLTQyYTYtODYyOC1hODU0NzJhOTk2N2UiLCJrZXkiOiJleUowZVhBaU9pSktWMVFpTENKaGJHY2lPaUpJVXpJMU5pSjkuZXlKM1lXeHNaWFJmYVdRaU9pSXhZV1kxT0RJd015MHpNMlpoTFRReVlUWXRPRFl5T0MxaE9EVTBOekpoT1RrMk4yVWlMQ0pwWVhRaU9qRTJOekF5T0RjME56SXNJbVY0Y0NJNk1UWTNNRE0zTXpnM01uMC5NbmNFeVpNdE9wOVJYM3NOb3k2SDhrNmszVU44ckg3WXBObm81TV9KNkpVIiwidF9pZCI6IjEzMjQ2NWU0LWM1N2YtNDU5Zi04NTM0LWUzMGU3ODQ4NGYyNCIsImV4cCI6MTY3MDMwNTQ3Mn0.TGzC6istfsKeeJR6Yp0kYTo-WMsOM66sKYSO1OUi3Ug",
-)
-
-
-idtoken_payload = {
-    "sub": "1af58203-33fa-42a6-8628-a85472a9967e",
-    "t_id": "132465e4-c57f-459f-8534-e30e78484f24",
-    "exp": 1670305472,
-}
-
-idtoken_payload_key_payload = {
-    "wallet_id": "1af58203-33fa-42a6-8628-a85472a9967e",
-    "iat": 1670287472,
-    "exp": 1670373872,
-}
