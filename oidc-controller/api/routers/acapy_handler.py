@@ -1,7 +1,9 @@
 import logging, json
 from typing import List, Dict
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..db.session import get_async_session
 
 from ..db.models import AuthSession
 from ..core.acapy.client import AcapyClient

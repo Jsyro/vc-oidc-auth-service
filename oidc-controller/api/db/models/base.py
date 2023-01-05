@@ -11,11 +11,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..session import db
 
 
-class BaseModel(SQLModel):
+class BaseSQLModel(SQLModel):
     pass
 
 
-class BaseTable(BaseModel):
+class BaseTable(BaseSQLModel):
     # the following are marked optional because they are generated on the server
     # these will be included in each class where we set table=true (our table classes)
     id: Optional[uuid.UUID] = Field(

@@ -21,18 +21,6 @@ class AcapyClient:
     service_endpoint = (
         "https://7818-165-225-211-70.ngrok.io"  # from ngrok traction-agent
     )
-
-    # wallet_id = "30d938ed-2708-46b7-860e-1a1b77ad7da4"
-    # acapy_host = "https://traction-acapy-admin-test.apps.silver.devops.gov.bc.ca/"
-    # acapy_x_api_key = "b4pFHeTJvRqRMAi11SCSaYjcL8KjcNhZ"
-
-    # wallet_id = "3bf7500b-c0bd-461d-96a7-999d16ce1bb5"
-    # acapy_host = "https://int-traction-acapy-admin-test.apps.silver.devops.gov.bc.ca"
-    # acapy_x_api_key = "Vlp07FJzVjEY9xAU0YskghPdOODAvoUg"
-    # service_endpoint = (
-    #     "https://int-traction-acapy-test.apps.silver.devops.gov.bc.ca"  # from ngrok
-    # )
-
     wallet_token: str = None
 
     def __init__(self):

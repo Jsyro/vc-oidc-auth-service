@@ -15,6 +15,11 @@ config = context.config
 config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_ADMIN_URI)
 target_metadata = BaseTable.metadata
 
+from api.verificationConfigs.models import (
+    VerificationConfig,
+)  # noqa: 'autogenerate' support
+
+
 fileConfig(config.config_file_name)
 
 

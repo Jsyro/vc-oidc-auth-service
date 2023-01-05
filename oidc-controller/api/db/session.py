@@ -1,17 +1,28 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
-
 from api.core.config import settings
 
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-engine = create_async_engine(
+async_engine = create_async_engine(
     settings.SQLALCHEMY_DATABASE_URI,
     echo=settings.DB_ECHO_LOG,
     echo_pool=settings.DB_ECHO_LOG,
     pool_size=20,
     poolclass=QueuePool,
 )
-async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-db: AsyncSession = async_session()
+
+async def get_async_session():
+    async_session = sessionmaker(
+        bind=async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+    async with async_session() as session:
+        yield session
+
+
+async_session2 = sessionmaker(
+    bind=async_engine, class_=AsyncSession, expire_on_commit=False
+)
+db: AsyncSession = async_session2()

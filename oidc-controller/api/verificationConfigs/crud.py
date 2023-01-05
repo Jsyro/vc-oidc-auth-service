@@ -1,0 +1,67 @@
+from uuid import UUID
+
+from fastapi import HTTPException
+from fastapi import status as http_status
+from sqlalchemy import delete, select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from .models import (
+    VerificationConfig,
+    VerificationConfigCreate,
+    VerificationConfigPatch,
+)
+
+
+class VerificationConfigCRUD:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(self, data: VerificationConfigCreate) -> VerificationConfig:
+        values = data.dict()
+
+        hero = VerificationConfig(**values)
+        self.session.add(hero)
+        await self.session.commit()
+        await self.session.refresh(hero)
+
+        return hero
+
+    async def get(self, ver_config_id: str) -> VerificationConfig:
+        statement = select(VerificationConfig).where(
+            VerificationConfig.ver_config_id == ver_config_id
+        )
+        results = await self.session.execute(statement=statement)
+        ver_conf = results.scalar_one_or_none()  # type: VerificationConfig | None
+
+        if ver_conf is None:
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND,
+                detail="The verification_config hasn't been found!",
+            )
+
+        return ver_conf
+
+    async def patch(
+        self, ver_config_id: str, data: VerificationConfigPatch
+    ) -> VerificationConfig:
+        hero = await self.get(ver_config_id=ver_config_id)
+        values = data.dict(exclude_unset=True)
+
+        for k, v in values.items():
+            setattr(hero, k, v)
+
+        self.session.add(hero)
+        await self.session.commit()
+        await self.session.refresh(hero)
+
+        return hero
+
+    async def delete(self, ver_config_id: str) -> bool:
+        statement = delete(VerificationConfig).where(
+            VerificationConfig.ver_config_id == ver_config_id
+        )
+
+        await self.session.execute(statement=statement)
+        await self.session.commit()
+
+        return True

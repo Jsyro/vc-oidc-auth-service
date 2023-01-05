@@ -14,6 +14,7 @@ from .routers import oidc
 from .routers import configs
 from .routers import acapy_handler
 from .routers import presentation_request
+from .verificationConfigs.router import router as ver_configs_router
 
 # setup loggers
 # TODO: set config via env parameters...
@@ -37,7 +38,7 @@ def get_application() -> FastAPI:
 
 
 app = get_application()
-app.include_router(configs.router, prefix="/configs", tags=["configs"])
+app.include_router(ver_configs_router, prefix="/ver_configs", tags=["ver_configs"])
 app.include_router(
     oidc.router, prefix="/vc/connect", tags=["oidc"], include_in_schema=False
 )

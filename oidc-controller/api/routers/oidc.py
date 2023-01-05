@@ -10,10 +10,15 @@ from oic.oic.message import (
 )
 import qrcode
 
+from fastapi import APIRouter, Request, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..db.session import get_async_session
+
+
 from ..core.acapy.client import AcapyClient
 from ..core.oidc.issue_token_service import Token
-from ..db.models import AuthSession, PresentationConfiguration
-
+from ..db.models import AuthSession
+from ..verificationConfigs.crud import VerificationConfigCRUD
 
 ChallengePollUri = "/poll"
 AuthorizeCallbackUri = "/callback"
@@ -35,7 +40,11 @@ async def post_authorize(request: Request):
 
 
 @router.get(VerifiedCredentialAuthorizeUri, response_class=HTMLResponse)
-async def get_authorize(request: Request, state: str):
+async def get_authorize(
+    request: Request,
+    state: str,
+    session: AsyncSession = Depends(get_async_session),
+):
     """Called by oidc platform."""
     logger.debug(f">>> get_authorize")
 
@@ -44,18 +53,16 @@ async def get_authorize(request: Request, state: str):
     model.verify()
 
     client = AcapyClient()
-
-    # Load pres_req_conf_id
     pres_req_conf_id = model.get("pres_req_conf_id")
-    pres_config = await PresentationConfiguration.find_by_pres_req_conf_id(
-        pres_req_conf_id
-    )
 
-    if not pres_config:
+    ver_configs = VerificationConfigCRUD(session)
+    ver_config = await ver_configs.get(pres_req_conf_id)
+    logger.warn(ver_config)
+    if not ver_config:
         raise HTTPException(status=404, detail="pres_req_conf_id not found")
 
     # Create presentation_request to show on screen
-    response = client.create_presentation_request(pres_config.generate_proof_request())
+    response = client.create_presentation_request(ver_config.generate_proof_request())
 
     # save OIDC AuthSession
     session = AuthSession(
@@ -67,7 +74,7 @@ async def get_authorize(request: Request, state: str):
     await session.save()
 
     # QR CONTENTS
-    controller_host = "https://8197-165-225-211-70.ngrok.io"
+    controller_host = "https://0385-165-225-211-70.ngrok.io"
     url_to_message = (
         controller_host + "/url/pres_req/" + str(session.presentation_request_id)
     )
