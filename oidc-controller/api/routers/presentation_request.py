@@ -1,9 +1,12 @@
 import logging
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..db.session import get_async_session
 
-from ..db.models import AuthSession
+from ..authSessions.models import AuthSession
+from ..authSessions.crud import AuthSessionCRUD
 from ..core.acapy.client import AcapyClient
 
 from ..core.aries import (
@@ -17,12 +20,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/url/pres_req/{pres_req_id}")
+@router.get("/url/pres_req/{pres_exch_id}")
 async def send_connectionless_proof_req(
     request: Request,
-    pres_req_id: str,
+    pres_exch_id: str,
+    session: AsyncSession = Depends(get_async_session),
 ):
-    auth_session: AuthSession = await AuthSession.find_by_pres_req_id(pres_req_id)
+    auth_sessions = AuthSessionCRUD(session)
+    auth_session: AuthSession = await auth_sessions.get_by_pres_exch_id(pres_exch_id)
     client = AcapyClient()
 
     public_did = client.get_wallet_public_did()
@@ -33,10 +38,10 @@ async def send_connectionless_proof_req(
 
     # bundle everything needed for the QR code
     byo_attachment = PresentProofv10Attachment.build(
-        auth_session.presentation_request["presentation_request"]
+        auth_session.presentation_exchange["presentation_request"]
     )
     msg = PresentationRequestMessage(
-        id=auth_session.presentation_request["thread_id"],
+        id=auth_session.presentation_exchange["thread_id"],
         request=[byo_attachment],
         service=s_d,
     )

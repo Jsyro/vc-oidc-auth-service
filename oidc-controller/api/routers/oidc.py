@@ -17,7 +17,8 @@ from ..db.session import get_async_session
 
 from ..core.acapy.client import AcapyClient
 from ..core.oidc.issue_token_service import Token
-from ..db.models import AuthSession
+from ..authSessions.models import AuthSession
+from ..authSessions.crud import AuthSessionCRUD, AuthSessionCreate
 from ..verificationConfigs.crud import VerificationConfigCRUD
 
 ChallengePollUri = "/poll"
@@ -53,31 +54,29 @@ async def get_authorize(
     model.verify()
 
     client = AcapyClient()
-    pres_req_conf_id = model.get("pres_req_conf_id")
+    ver_config_id = model.get("pres_req_conf_id")
 
+    auth_sessions = AuthSessionCRUD(session)
     ver_configs = VerificationConfigCRUD(session)
-    ver_config = await ver_configs.get(pres_req_conf_id)
+    ver_config = await ver_configs.get(ver_config_id)
     logger.warn(ver_config)
-    if not ver_config:
-        raise HTTPException(status=404, detail="pres_req_conf_id not found")
 
     # Create presentation_request to show on screen
     response = client.create_presentation_request(ver_config.generate_proof_request())
 
-    # save OIDC AuthSession
-    session = AuthSession(
+    new_auth_session = AuthSessionCreate(
         request_parameters=model.to_dict(),
-        presentation_record_id=pres_req_conf_id,
-        presentation_request_id=response.presentation_exchange_id,
-        presentation_request=response,
+        ver_config_id=ver_config_id,
+        pres_exch_id=response.presentation_exchange_id,
+        presentation_exchange=response,
     )
-    await session.save()
+
+    # save OIDC AuthSession
+    auth_session = await auth_sessions.create(new_auth_session)
 
     # QR CONTENTS
-    controller_host = "https://0385-165-225-211-70.ngrok.io"
-    url_to_message = (
-        controller_host + "/url/pres_req/" + str(session.presentation_request_id)
-    )
+    controller_host = "https://ad84-165-225-211-70.ngrok.io"
+    url_to_message = controller_host + "/url/pres_req/" + str(auth_session.pres_exch_id)
 
     # CREATE an image?
     buff = io.BytesIO()
@@ -96,7 +95,7 @@ async def get_authorize(
             <p><img src="data:image/jpeg;base64,{image_contents}" alt="{image_contents}" width="300px" height="300px" /></p>
 
             <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
-            <a href="http://localhost:5201/vc/connect{AuthorizeCallbackUri}?pid={session.id}">callback url (redirect to kc)</a>
+            <a href="http://localhost:5201/vc/connect{AuthorizeCallbackUri}?pid={auth_session.uuid}">callback url (redirect to kc)</a>
         </body>
     </html>
     """
@@ -106,6 +105,7 @@ async def get_authorize(
 async def get_authorize_callback(
     request: Request,
     pid: str,
+    session: AsyncSession = Depends(get_async_session),
 ):
     """Called by oidc platform."""
     logger.debug(f">>> get_authorize_callback")
@@ -113,14 +113,16 @@ async def get_authorize_callback(
     # return {"url": oidc_redirect + "?state=" + kc_state}
     # url = $"{session.RequestParameters[IdentityConstants.RedirectUriParameterName]}?code={session.Id}";
     redirect_uri = "http://localhost:8880/auth/realms/vc-authn/broker/vc-authn/endpoint"
-    session = await AuthSession.find_by_id(pid)
+
+    auth_sessions = AuthSessionCRUD(session)
+    auth_session = await auth_sessions.get(pid)
 
     url = (
         redirect_uri
         + "?code="
-        + str(session.id)
+        + str(auth_session.uuid)
         + "&state="
-        + str(session.request_parameters["state"])
+        + str(auth_session.request_parameters["state"])
     )
     print(url)
     return f"""
@@ -136,19 +138,22 @@ async def get_authorize_callback(
 
 
 @router.post(VerifiedCredentialTokenUri)
-async def post_token(request: Request):
+async def post_token(
+    request: Request,
+    session: AsyncSession = Depends(get_async_session),
+):
     """Called by oidc platform."""
     logger.info(f">>> post_token")
     form = await request.form()
     # logger.info(f"payload ={form}")
     model = AccessTokenRequest().from_dict(form._dict)
-    session: AuthSession = await AuthSession.find_by_id(model.get("code"))
     client = AcapyClient()
-
+    auth_sessions = AuthSessionCRUD(session)
+    auth_session = await auth_sessions.get(model.get("code"))
     # RETURNS HARDCODED PRESENTATION WITH VERIFIED PROOF
-    presentation = client.get_presentation_request(session.presentation_request_id)
+    presentation = client.get_presentation_request(auth_session.pres_exch_id)
 
-    claims = Token.get_claims(presentation, session)
+    claims = Token.get_claims(presentation, auth_session)
     claims = {c.type: c for c in claims}
 
     token = Token(
@@ -159,15 +164,15 @@ async def post_token(request: Request):
         "sub": "1af58203-33fa-42a6-8628-a85472a9967e",
         "t_id": "132465e4-c57f-459f-8534-e30e78484f24",
         "exp": 1970305472,
-        "nonce": session.request_parameters["nonce"],
+        "nonce": auth_session.request_parameters["nonce"],
         "aud": "keycloak",
     }
     logger.warn("WORKING EXAMPLE:")
     logger.warn(IdToken().from_dict(idtoken_payload))
     id_token = IdToken().from_dict(
-        token.idtoken_dict(session.request_parameters["nonce"])
+        token.idtoken_dict(auth_session.request_parameters["nonce"])
     )
-    logger.warn(session.request_parameters["nonce"])
+    logger.warn(auth_session.request_parameters["nonce"])
     logger.info(id_token)
     id_token_jwt = id_token.to_jwt()
     logger.info(id_token_jwt)

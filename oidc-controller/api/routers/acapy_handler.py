@@ -5,7 +5,8 @@ from fastapi import APIRouter, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..db.session import get_async_session
 
-from ..db.models import AuthSession
+from ..authSessions.models import AuthSession, AuthSessionPatch
+from ..authSessions.crud import AuthSessionCRUD
 from ..core.acapy.client import AcapyClient
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,11 @@ async def _parse_webhook_body(request: Request):
 
 
 @router.post("/topic/{topic}/")
-async def post_topic(request: Request, topic: str):
+async def post_topic(
+    request: Request,
+    topic: str,
+    session: AsyncSession = Depends(get_async_session),
+):
     """Called by oidc platform."""
     logger.info(f">>> post_topic : topic={topic}")
     client = AcapyClient()
@@ -35,21 +40,23 @@ async def post_topic(request: Request, topic: str):
         case "present_proof":
             webhook_body = await _parse_webhook_body(request)
             logger.info(webhook_body)
-            session: AuthSession = await AuthSession.find_by_pres_req_id(
+            auth_sessions = AuthSessionCRUD(session)
+            auth_session: AuthSession = await auth_sessions.get_by_pres_exch_id(
                 webhook_body["presentation_exchange_id"]
             )
             if webhook_body["state"] == "presentation_received":
 
                 logger.info("GOT A RESPONSE, TIME TO VERIFY")
-                resp = client.verify_presentation(session.presentation_request_id)
+                resp = client.verify_presentation(auth_session.pres_exch_id)
                 logger.info(resp)
             if webhook_body["state"] == "verified":
                 logger.info("VERIFIED")
-                session.presentation_request_satisfied = True
                 # update presentation_exchange record
-                session.presentation_request = webhook_body
-
-                await session.save()
+                auth_session.presentation_request_satisfied = True
+                auth_session.presentation_exchange = webhook_body
+                await auth_sessions.patch(
+                    auth_session.uuid, AuthSessionPatch(**auth_session.dict())
+                )
 
             pass
         case other:

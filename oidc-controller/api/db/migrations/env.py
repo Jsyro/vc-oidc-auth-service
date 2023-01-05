@@ -9,14 +9,17 @@ from alembic import context
 sys.path = ["", ".."] + sys.path[1:]  # TODO: Fix it
 
 from api.core.config import settings  # noqa
-from api.db.models import BaseTable  # noqa
+from api.db.models import BaseSQLModel  # noqa
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.SQLALCHEMY_DATABASE_ADMIN_URI)
-target_metadata = BaseTable.metadata
+target_metadata = BaseSQLModel.metadata
 
 from api.verificationConfigs.models import (
     VerificationConfig,
+)  # noqa: 'autogenerate' support
+from api.authSessions.models import (
+    AuthSession,
 )  # noqa: 'autogenerate' support
 
 

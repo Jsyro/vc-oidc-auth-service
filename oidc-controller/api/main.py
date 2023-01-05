@@ -11,7 +11,6 @@ from api.core.config import settings
 from api.db.models import *
 
 from .routers import oidc
-from .routers import configs
 from .routers import acapy_handler
 from .routers import presentation_request
 from .verificationConfigs.router import router as ver_configs_router

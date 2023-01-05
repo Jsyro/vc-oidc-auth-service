@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from oic.oic.message import IdToken
 from oic.utils.jwt import JWT
 
-from ...db.models import AuthSession
+from ...authSessions.models import AuthSession
 
 logger = logging.getLogger(__name__)
 
@@ -47,12 +47,12 @@ class Token(BaseModel):
             Claim(type="nonce", value=auth_session.request_parameters["nonce"])
         )
 
-        for requested_attr in auth_session.presentation_request["presentation_request"][
-            "requested_attributes"
-        ].values():
+        for requested_attr in auth_session.presentation_exchange[
+            "presentation_request"
+        ]["requested_attributes"].values():
 
             # loop through each value and put it in token as a claim
-            revealed_attrs: Dict = auth_session.presentation_request["presentation"][
+            revealed_attrs: Dict = auth_session.presentation_exchange["presentation"][
                 "requested_proof"
             ]["revealed_attrs"]
             for k, v in revealed_attrs.items():

@@ -19,7 +19,7 @@ class AcapyClient:
     acapy_host = "http://traction-agent:8031"
     acapy_x_api_key = "change-me"
     service_endpoint = (
-        "https://7818-165-225-211-70.ngrok.io"  # from ngrok traction-agent
+        "https://d935-165-225-211-70.ngrok.io"  # from ngrok traction-agent
     )
     wallet_token: str = None
 
