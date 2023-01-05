@@ -76,7 +76,9 @@ async def get_authorize(
 
     # QR CONTENTS
     controller_host = "https://ad84-165-225-211-70.ngrok.io"
-    url_to_message = controller_host + "/url/pres_req/" + str(auth_session.pres_exch_id)
+    url_to_message = (
+        controller_host + "/url/pres_exch/" + str(auth_session.pres_exch_id)
+    )
 
     # CREATE an image?
     buff = io.BytesIO()

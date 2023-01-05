@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/url/pres_req/{pres_exch_id}")
+@router.get("/url/pres_exch/{pres_exch_id}")
 async def send_connectionless_proof_req(
     request: Request,
     pres_exch_id: str,
