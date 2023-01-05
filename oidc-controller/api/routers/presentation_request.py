@@ -1,10 +1,7 @@
-import logging, json, base64, io
-from typing import List, Dict
-from base64 import encodebytes
-from PIL import Image
+import logging
 
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 
 from ..db.models import AuthSession
 from ..core.acapy.client import AcapyClient

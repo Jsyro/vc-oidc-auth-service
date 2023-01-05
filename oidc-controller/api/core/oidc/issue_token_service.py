@@ -1,7 +1,7 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from oic.oic.message import IdToken
 from oic.utils.jwt import JWT

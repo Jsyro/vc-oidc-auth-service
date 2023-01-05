@@ -3,9 +3,8 @@ import json
 import logging
 from uuid import UUID
 
-from .models import WalletDidPublicResponse, WalletPublicDid, CreatePresentationResponse
+from .models import WalletPublicDid, CreatePresentationResponse
 
-from api.db.models.presentation_request_config import PresentationRequestConfiguration
 
 _client = None
 logger = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ class AcapyClient:
     acapy_host = "http://traction-agent:8031"
     acapy_x_api_key = "change-me"
     service_endpoint = (
-        "https://5d89-165-225-211-70.ngrok.io"  # from ngrok traction-agent
+        "https://7818-165-225-211-70.ngrok.io"  # from ngrok traction-agent
     )
 
     # wallet_id = "30d938ed-2708-46b7-860e-1a1b77ad7da4"
@@ -64,13 +63,16 @@ class AcapyClient:
         if not self.wallet_token:
             self.get_wallet_token()
 
+        present_proof_payload = {"proof_request": presentation_request_configuration}
+        logger.warn(present_proof_payload)
+
         resp_raw = requests.post(
             self.acapy_host + CREATE_PRESENTATION_REQUEST_URL,
             headers={
                 "X-API-KEY": self.acapy_x_api_key,
                 "Authorization": "Bearer " + self.wallet_token,
             },
-            json=presentation_request_configuration,
+            json=present_proof_payload,
         )
         assert resp_raw.status_code == 200, resp_raw.content
         resp = json.loads(resp_raw.content)

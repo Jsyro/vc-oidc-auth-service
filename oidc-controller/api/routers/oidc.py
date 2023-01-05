@@ -1,6 +1,6 @@
 import logging, json, base64, io
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from oic.oic.message import (
     AuthorizationRequest,
@@ -38,25 +38,6 @@ async def post_authorize(request: Request):
 async def get_authorize(request: Request, state: str):
     """Called by oidc platform."""
     logger.debug(f">>> get_authorize")
-    req_dict = {
-        "auto_verify": False,
-        "comment": "AWDAWD",
-        "proof_request": {
-            "name": "Proofrequest",
-            "version": "0.1.0",
-            "requested_attributes": {
-                "prop1": {
-                    "name": "first_name",
-                    "restrictions": [],
-                },
-                "prop2": {
-                    "name": "last_name",
-                    "restrictions": [],
-                },
-            },
-            "requested_predicates": {},
-        },
-    }
 
     # Verify OIDC forward payload
     model = AuthorizationRequest().from_dict(request.query_params._dict)
@@ -69,12 +50,12 @@ async def get_authorize(request: Request, state: str):
     pres_config = await PresentationConfiguration.find_by_pres_req_conf_id(
         pres_req_conf_id
     )
-    pres_req = (
-        pres_config.presentation_request_configuration if pres_config else req_dict
-    )
+
+    if not pres_config:
+        raise HTTPException(status=404, detail="pres_req_conf_id not found")
 
     # Create presentation_request to show on screen
-    response = client.create_presentation_request(pres_req)
+    response = client.create_presentation_request(pres_config.generate_proof_request())
 
     # save OIDC AuthSession
     session = AuthSession(
@@ -86,7 +67,7 @@ async def get_authorize(request: Request, state: str):
     await session.save()
 
     # QR CONTENTS
-    controller_host = "https://b4d4-165-225-211-70.ngrok.io"
+    controller_host = "https://8197-165-225-211-70.ngrok.io"
     url_to_message = (
         controller_host + "/url/pres_req/" + str(session.presentation_request_id)
     )
