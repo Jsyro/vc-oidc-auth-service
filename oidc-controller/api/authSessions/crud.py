@@ -40,17 +40,17 @@ class AuthSessionCRUD:
         return ver_conf
 
     async def patch(self, auth_session_id: str, data: AuthSessionPatch) -> AuthSession:
-        hero = await self.get(auth_session_id=auth_session_id)
+        auth_session = await self.get(auth_session_id=auth_session_id)
         values = data.dict(exclude_unset=True)
 
         for k, v in values.items():
-            setattr(hero, k, v)
+            setattr(auth_session, k, v)
 
-        self.session.add(hero)
+        self.session.add(auth_session)
         await self.session.commit()
-        await self.session.refresh(hero)
+        await self.session.refresh(auth_session)
 
-        return hero
+        return auth_session
 
     async def delete(self, auth_session_id: str) -> bool:
         statement = delete(AuthSession).where(AuthSession.uuid == auth_session_id)
@@ -59,7 +59,6 @@ class AuthSessionCRUD:
         await self.session.commit()
 
         return True
-
 
     async def get_by_pres_exch_id(self, pres_exch_id: str) -> AuthSession:
         statement = select(AuthSession).where(AuthSession.pres_exch_id == pres_exch_id)

@@ -4,11 +4,8 @@ from datetime import datetime, timedelta
 from sqlmodel import Field
 from sqlalchemy import Column, text
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.dialects.postgresql import UUID, JSON
 
-from api.db.models.base import BaseSQLModel
-from api.core.models import UUIDModel
-from .examples import ex_hero_create, ex_hero_patch, ex_hero_read
+from api.core.models import UUIDModel, BaseSQLModel
 
 
 prefix = "auth_sess"
@@ -32,17 +29,12 @@ class AuthSession(AuthSessionBase, UUIDModel, table=True):
 
 
 class AuthSessionRead(AuthSessionBase, UUIDModel):
-    class Config:
-        schema_extra = {"example": ex_hero_read}
+    pass
 
 
 class AuthSessionCreate(AuthSessionBase):
-    class Config:
-        schema_extra = {"example": ex_hero_create}
+    pass
 
 
 class AuthSessionPatch(AuthSessionBase):
-    # nickname: Optional[str] = sqlm.Field(max_length=255)
-
-    class Config:
-        schema_extra = {"example": ex_hero_patch}
+    pass

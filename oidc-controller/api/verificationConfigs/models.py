@@ -1,23 +1,18 @@
-from typing import List
-from typing import Optional, List, Dict
-import random
-import pydantic as p
-import sqlmodel as sqlm
+from sqlmodel import Field
 from sqlalchemy import Column, select
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.ext.hybrid import hybrid_property
 
-from api.db.models.base import BaseSQLModel
-from .examples import ex_hero_create, ex_hero_patch, ex_hero_read
+from api.core.models import BaseSQLModel
+from .examples import ex_ver_config_read, ex_ver_config_create, ex_ver_config_patch
 
 
 prefix = "ver_conf"
 
 
 class VerificationConfigBase(BaseSQLModel):
-    ver_config_id: str = sqlm.Field(primary_key=True)
-    subject_identifier: str = sqlm.Field()
-    proof_request: dict = sqlm.Field(sa_column=Column(JSON))
+    ver_config_id: str = Field(primary_key=True)
+    subject_identifier: str = Field()
+    proof_request: dict = Field(sa_column=Column(JSON))
 
     def generate_proof_request(self):
         result = {
@@ -41,16 +36,16 @@ class VerificationConfig(VerificationConfigBase, table=True):
 
 class VerificationConfigRead(VerificationConfigBase):
     class Config:
-        schema_extra = {"example": ex_hero_read}
+        schema_extra = {"example": ex_ver_config_read}
 
 
 class VerificationConfigCreate(VerificationConfigBase):
     class Config:
-        schema_extra = {"example": ex_hero_create}
+        schema_extra = {"example": ex_ver_config_create}
 
 
 class VerificationConfigPatch(VerificationConfigBase):
     # nickname: Optional[str] = sqlm.Field(max_length=255)
 
     class Config:
-        schema_extra = {"example": ex_hero_patch}
+        schema_extra = {"example": ex_ver_config_patch}

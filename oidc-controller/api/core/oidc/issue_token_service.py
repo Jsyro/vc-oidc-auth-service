@@ -12,10 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class Claim(BaseModel):
-    # issuer: str
-    type: str  # sub, nonce, iss, iat, acr
+    type: str
     value: str
-    # value_type: str
 
     # vc-authn-oidc uses this class/constructor
     # https://learn.microsoft.com/en-us/dotnet/api/system.security.claims.claim.-ctor?view=net-7.0#system-security-claims-claim-ctor(system-string-system-string)

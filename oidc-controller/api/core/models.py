@@ -17,7 +17,11 @@ class StatusMessage(BaseModel):
     message: str
 
 
-class UUIDModel(SQLModel):
+class BaseSQLModel(SQLModel):
+    pass
+
+
+class UUIDModel(BaseSQLModel):
     uuid: uuid_pkg.UUID = Field(
         default_factory=uuid_pkg.uuid4,
         primary_key=True,
@@ -27,7 +31,7 @@ class UUIDModel(SQLModel):
     )
 
 
-class TimestampModel(SQLModel):
+class TimestampModel(BaseSQLModel):
     created_at: datetime = Field(
         default_factory=datetime.utcnow,
         nullable=False,

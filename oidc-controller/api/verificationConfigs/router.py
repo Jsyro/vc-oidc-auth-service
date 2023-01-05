@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
 
-from ..core.status_message import StatusMessage
+from ..core.models import StatusMessage
 
 from .crud import VerificationConfigCRUD
 from .dependencies import get_veriication_configs_crud
@@ -34,26 +34,25 @@ async def create_ver_conf(
 async def get_ver_conf_by_uuid(
     ver_config_id: str,
     ver_configs: VerificationConfigCRUD = Depends(get_veriication_configs_crud),
-    
 ):
     ver_config = await ver_configs.get(ver_config_id=ver_config_id)
 
     return ver_config
 
 
-# @router.patch(
-#     "/{ver_config_id}",
-#     response_model=VerificationConfigRead,
-#     status_code=http_status.HTTP_200_OK,
-# )
-# async def patch_ver_conf_by_uuid(
-#     ver_config_id: str,
-#     data: VerificationConfigPatch,
-#     ver_configs: VerificationConfigCRUD = Depends(get_veriication_configs_crud),
-# ):
-#     ver_conf = await ver_configs.patch(ver_config_id=ver_config_id, data=data)
+@router.patch(
+    "/{ver_config_id}",
+    response_model=VerificationConfigRead,
+    status_code=http_status.HTTP_200_OK,
+)
+async def patch_ver_conf_by_uuid(
+    ver_config_id: str,
+    data: VerificationConfigPatch,
+    ver_configs: VerificationConfigCRUD = Depends(get_veriication_configs_crud),
+):
+    ver_conf = await ver_configs.patch(ver_config_id=ver_config_id, data=data)
 
-#     return ver_conf
+    return ver_conf
 
 
 @router.delete(
