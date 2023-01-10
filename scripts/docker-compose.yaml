@@ -20,7 +20,7 @@ services:
       - ACAPY_ADMIN_URL_API_KEY=${ACAPY_ADMIN_URL_API_KEY}
       - ACAPY_WALLET_ID=${ACAPY_WALLET_ID}
       - NGROK_TUNNEL_HOST=http://ngrok-oidc-controller:4040
-      - TRACTION_NGROK_TUNNEL_HOST=http://ngrok-traction-agent:4040
+      - ACAPY_NGROK_TUNNEL_HOST=${ACAPY_NGROK_TUNNEL_HOST}
     ports:
       - ${CONTROLLER_SERVICE_PORT}:5000
     volumes:

@@ -50,6 +50,14 @@ class GlobalConfig(BaseSettings):
         resp = json.loads(raw_resp.content)
         SELF_CONTROLLER_HOST_URL = resp["tunnels"][0]["public_url"]
 
+    #
+    ACAPY_PUBLIC_SERVICE_URL: str = os.environ.get("ACAPY_PUBLIC_SERVICE_URL")
+    ACAPY_NGROK_TUNNEL_HOST: str = os.environ.get("ACAPY_NGROK_TUNNEL_HOST")
+    if not ACAPY_PUBLIC_SERVICE_URL and ACAPY_NGROK_TUNNEL_HOST:
+        raw_resp = requests.get(ACAPY_NGROK_TUNNEL_HOST + "/api/tunnels")
+        resp = json.loads(raw_resp.content)
+        ACAPY_PUBLIC_SERVICE_URL = resp["tunnels"][0]["public_url"]
+
     # application connection is async
     # fmt: off
     SQLALCHEMY_DATABASE_URI: PostgresDsn = (

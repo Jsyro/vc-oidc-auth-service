@@ -18,9 +18,7 @@ class AcapyClient:
     wallet_id = settings.ACAPY_WALLET_ID
     acapy_host = settings.ACAPY_ADMIN_URL
     acapy_admin_api_key = settings.ACAPY_ADMIN_URL_API_KEY
-    service_endpoint = (
-        "https://9927-165-225-211-70.ngrok.io"  # from ngrok traction-agent
-    )
+    service_endpoint = settings.ACAPY_PUBLIC_SERVICE_URL
     wallet_token: str = None
 
     def __init__(self):
