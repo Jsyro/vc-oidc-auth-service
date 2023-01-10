@@ -42,8 +42,8 @@ class GlobalConfig(BaseSettings):
         "OIDC_CONTROLLER_DB_ADMIN_PWD", "oidccontrolleradminpass"
     )
 
+    # Get SELF_CONTROLLER_HOST_URL from env or NGROK.
     SELF_CONTROLLER_HOST_URL: str = os.environ.get("SELF_CONTROLLER_HOST_URL")
-
     NGROK_TUNNEL_HOST: str = os.environ.get("NGROK_TUNNEL_HOST")
     if not SELF_CONTROLLER_HOST_URL and NGROK_TUNNEL_HOST:
         raw_resp = requests.get(NGROK_TUNNEL_HOST + "/api/tunnels")
