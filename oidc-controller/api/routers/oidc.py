@@ -1,6 +1,6 @@
-import logging, json, base64, io
+import logging, base64, io
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from oic.oic.message import (
     AuthorizationRequest,
@@ -77,7 +77,7 @@ async def get_authorize(
         request_parameters=model.to_dict(),
         ver_config_id=ver_config_id,
         pres_exch_id=response.presentation_exchange_id,
-        presentation_exchange=response,
+        presentation_exchange=response.dict(),
     )
 
     # save OIDC AuthSession
@@ -89,7 +89,7 @@ async def get_authorize(
         controller_host + "/url/pres_exch/" + str(auth_session.pres_exch_id)
     )
 
-    # CREATE an image?
+    # CREATE an image
     buff = io.BytesIO()
     qrcode.make(url_to_message).save(buff, format="PNG")
     image_contents = base64.b64encode(buff.getvalue()).decode("utf-8")
@@ -116,8 +116,6 @@ async def get_authorize(
 
             <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
             <a href="http://localhost:5201/vc/connect{AuthorizeCallbackUri}?pid={auth_session.uuid}">callback url (redirect to kc)</a>
-
-            <a href="http://localhost:5201/vc/connect/poll/{auth_session.pres_exch_id}">asda</a>
         </body>
     </html>
 
@@ -167,16 +165,14 @@ async def post_token(
     """Called by oidc platform."""
     logger.info(f">>> post_token")
     form = await request.form()
-    # logger.info(f"payload ={form}")
     model = AccessTokenRequest().from_dict(form._dict)
     client = AcapyClient()
     auth_sessions = AuthSessionCRUD(session)
     auth_session = await auth_sessions.get(model.get("code"))
-    # RETURNS HARDCODED PRESENTATION WITH VERIFIED PROOF
+
     presentation = client.get_presentation_request(auth_session.pres_exch_id)
 
     claims = Token.get_claims(presentation, auth_session)
-    claims = {c.type: c for c in claims}
 
     token = Token(
         issuer="placeholder", audiences=["keycloak"], lifetime=10000, claims=claims
@@ -186,8 +182,6 @@ async def post_token(
         token.idtoken_dict(auth_session.request_parameters["nonce"])
     )
     id_token_jwt = id_token.to_jwt()
-    logger.info(id_token_jwt)
-
     values = {
         "token_type": "bearer",
         "id_token": id_token_jwt,

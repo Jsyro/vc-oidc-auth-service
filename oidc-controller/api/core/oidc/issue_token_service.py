@@ -3,9 +3,6 @@ from datetime import datetime
 from typing import List, Dict
 from pydantic import BaseModel
 
-from oic.oic.message import IdToken
-from oic.utils.jwt import JWT
-
 from ...authSessions.models import AuthSession
 
 logger = logging.getLogger(__name__)
@@ -14,9 +11,6 @@ logger = logging.getLogger(__name__)
 class Claim(BaseModel):
     type: str
     value: str
-
-    # vc-authn-oidc uses this class/constructor
-    # https://learn.microsoft.com/en-us/dotnet/api/system.security.claims.claim.-ctor?view=net-7.0#system-security-claims-claim-ctor(system-string-system-string)
 
 
 class Token(BaseModel):
@@ -55,7 +49,7 @@ class Token(BaseModel):
             ]["revealed_attrs"]
             for k, v in revealed_attrs.items():
                 claims.append(Claim(type=requested_attr["name"], value=v["raw"]))
-            return claims
+            return {c.type: c for c in claims}
 
     def idtoken_dict(self, nonce: str) -> Dict:
         result = {}
