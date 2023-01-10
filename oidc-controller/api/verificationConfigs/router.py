@@ -4,7 +4,7 @@ from fastapi import status as http_status
 from ..core.models import StatusMessage
 
 from .crud import VerificationConfigCRUD
-from .dependencies import get_veriication_configs_crud
+from .dependencies import get_verification_configs_crud
 from .models import (
     VerificationConfigCreate,
     VerificationConfigPatch,
@@ -19,7 +19,7 @@ router = APIRouter()
 )
 async def create_ver_conf(
     data: VerificationConfigCreate,
-    ver_conf: VerificationConfigCRUD = Depends(get_veriication_configs_crud),
+    ver_conf: VerificationConfigCRUD = Depends(get_verification_configs_crud),
 ):
     ver_conf = await ver_conf.create(data=data)
 
@@ -33,7 +33,7 @@ async def create_ver_conf(
 )
 async def get_ver_conf_by_uuid(
     ver_config_id: str,
-    ver_configs: VerificationConfigCRUD = Depends(get_veriication_configs_crud),
+    ver_configs: VerificationConfigCRUD = Depends(get_verification_configs_crud),
 ):
     ver_config = await ver_configs.get(ver_config_id=ver_config_id)
 
@@ -48,7 +48,7 @@ async def get_ver_conf_by_uuid(
 async def patch_ver_conf_by_uuid(
     ver_config_id: str,
     data: VerificationConfigPatch,
-    ver_configs: VerificationConfigCRUD = Depends(get_veriication_configs_crud),
+    ver_configs: VerificationConfigCRUD = Depends(get_verification_configs_crud),
 ):
     ver_conf = await ver_configs.patch(ver_config_id=ver_config_id, data=data)
 
@@ -62,7 +62,7 @@ async def patch_ver_conf_by_uuid(
 )
 async def delete_ver_conf_by_uuid(
     ver_config_id: str,
-    ver_confes: VerificationConfigCRUD = Depends(get_veriication_configs_crud),
+    ver_confes: VerificationConfigCRUD = Depends(get_verification_configs_crud),
 ):
     status = await ver_confes.delete(ver_config_id=ver_config_id)
 
