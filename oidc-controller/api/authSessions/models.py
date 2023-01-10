@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from sqlmodel import Field
 from sqlalchemy import Column, text
-from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import JSON, UUID
 
 from api.core.models import UUIDModel, BaseSQLModel
 
@@ -14,14 +14,12 @@ prefix = "auth_sess"
 class AuthSessionBase(BaseSQLModel):
     expired_timestamp: datetime = Field(
         nullable=False, default=datetime.now() + timedelta(seconds=600)
-    )
+    )  # only lasts 5 minutes
     ver_config_id: str = Field(nullable=False)
-    pres_exch_id: uuid.UUID = Field(nullable=False)
-    presentation_request_satisfied: bool = Field(nullable=False, default=False)
+    pres_exch_id: uuid.UUID = Field(UUID(as_uuid=True), nullable=False)
     presentation_exchange: dict = Field(default={}, sa_column=Column(JSON))
     request_parameters: dict = Field(default={}, sa_column=Column(JSON))
-
-    _presentation: str = Field(nullable=False)
+    verified: bool = Field(nullable=False, default=False)
 
 
 class AuthSession(AuthSessionBase, UUIDModel, table=True):

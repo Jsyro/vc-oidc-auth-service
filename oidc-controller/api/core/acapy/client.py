@@ -4,7 +4,7 @@ import logging
 from uuid import UUID
 
 from .models import WalletPublicDid, CreatePresentationResponse
-
+from ..config import settings
 
 _client = None
 logger = logging.getLogger(__name__)
@@ -15,9 +15,9 @@ PRESENT_PROOF_RECORDS = "/present-proof/records"
 
 
 class AcapyClient:
-    wallet_id = "c6a6cdc2-723d-4368-b249-d046f40a7656"
-    acapy_host = "http://traction-agent:8031"
-    acapy_x_api_key = "change-me"
+    wallet_id = settings.ACAPY_WALLET_ID
+    acapy_host = settings.ACAPY_ADMIN_URL
+    acapy_admin_api_key = settings.ACAPY_ADMIN_URL_API_KEY
     service_endpoint = (
         "https://d935-165-225-211-70.ngrok.io"  # from ngrok traction-agent
     )
@@ -33,7 +33,7 @@ class AcapyClient:
         resp_raw = requests.post(
             self.acapy_host + f"/multitenancy/wallet/{self.wallet_id}/token",
             data={"wallet_key": "sample_key"},
-            headers={"X-API-KEY": self.acapy_x_api_key},
+            headers={settings.ACAPY_WEBHOOK_URL_API_KEY_NAME: self.acapy_admin_api_key},
         )
         assert (
             resp_raw.status_code == 200
@@ -52,12 +52,11 @@ class AcapyClient:
             self.get_wallet_token()
 
         present_proof_payload = {"proof_request": presentation_request_configuration}
-        logger.warn(present_proof_payload)
 
         resp_raw = requests.post(
             self.acapy_host + CREATE_PRESENTATION_REQUEST_URL,
             headers={
-                "X-API-KEY": self.acapy_x_api_key,
+                settings.ACAPY_WEBHOOK_URL_API_KEY_NAME: self.acapy_admin_api_key,
                 "Authorization": "Bearer " + self.wallet_token,
             },
             json=present_proof_payload,
@@ -80,7 +79,7 @@ class AcapyClient:
             + "/"
             + str(presentation_exchange_id),
             headers={
-                "X-API-KEY": self.acapy_x_api_key,
+                settings.ACAPY_WEBHOOK_URL_API_KEY_NAME: self.acapy_admin_api_key,
                 "Authorization": "Bearer " + self.wallet_token,
             },
         )
@@ -102,7 +101,7 @@ class AcapyClient:
             + str(presentation_exchange_id)
             + "/verify-presentation",
             headers={
-                "X-API-KEY": self.acapy_x_api_key,
+                settings.ACAPY_WEBHOOK_URL_API_KEY_NAME: self.acapy_admin_api_key,
                 "Authorization": "Bearer " + self.wallet_token,
             },
         )
@@ -120,7 +119,7 @@ class AcapyClient:
         resp_raw = requests.get(
             self.acapy_host + WALLET_DID_URI,
             headers={
-                "X-API-KEY": self.acapy_x_api_key,
+                settings.ACAPY_WEBHOOK_URL_API_KEY_NAME: self.acapy_admin_api_key,
                 "Authorization": "Bearer " + self.wallet_token,
             },
         )

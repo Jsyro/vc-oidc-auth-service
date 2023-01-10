@@ -48,34 +48,14 @@ class GlobalConfig(BaseSettings):
     SQLALCHEMY_DATABASE_ADMIN_URI: PostgresDsn = (
         f"postgresql://{PSQL_ADMIN_USER}:{PSQL_ADMIN_PASS}@{PSQL_HOST}:{PSQL_PORT}/{PSQL_DB}"  # noqa: E501
     )
-    # fmt: on
-
     ACAPY_ADMIN_URL: str = os.environ.get("ACAPY_ADMIN_URL", "http://localhost:8031")
     ACAPY_ADMIN_URL_API_KEY: str = os.environ.get(
         "ACAPY_ADMIN_URL_API_KEY", "change-me"
     )
-
-    TRACTION_API_ADMIN_USER: str = os.environ.get(
-        "TRACTION_API_ADMIN_USER", "innkeeper"
-    )
-    TRACTION_API_ADMIN_KEY: str = os.environ.get("TRACTION_API_ADMIN_KEY", "change-me")
-    TRACTION_HOST_URL: str = os.environ.get(
-        "TRACTION_HOST_URL", "http://traction-api:5000"
-    )
-    TRACTION_WEBHOOK_URL: str = os.environ.get(
-        "TRACTION_WEBHOOK_URL", "http://traction-api:5000/webhook"
-    )
-    TRACTION_TENANT_WEBHOOK_URL: str = os.environ.get(
-        "TRACTION_TENANT_WEBHOOK_URL", "http://traction-api:5000/webhook/tenant"
-    )
     ACAPY_WEBHOOK_URL_API_KEY_NAME = "x-api-key"
-    ACAPY_WEBHOOK_URL_API_KEY: str = os.environ.get("ACAPY_WEBHOOK_URL_API_KEY", "")
+    ACAPY_WALLET_ID: str = os.environ.get("ACAPY_WALLET_ID")
 
     ACAPY_ENDORSER_PUBLIC_DID: str = os.environ.get("ACAPY_ENDORSER_PUBLIC_DID")
-    ENDORSER_CONNECTION_ALIAS: str = os.environ.get(
-        "ENDORSER_CONNECTION_ALIAS", "endorser"
-    )
-
     ACAPY_GENESIS_URL: str = os.environ.get("ACAPY_GENESIS_URL")
 
     DB_ECHO_LOG: bool = False
@@ -86,7 +66,6 @@ class GlobalConfig(BaseSettings):
     TRACTION_CORS_URLS: str = os.environ.get("TRACTION_CORS_URLS", "")
 
     # openssl rand -hex 32
-    JWT_SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
     JWT_ALGORITHM = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 300
 

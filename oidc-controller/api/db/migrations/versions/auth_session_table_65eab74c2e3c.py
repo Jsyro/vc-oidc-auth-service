@@ -39,7 +39,7 @@ def upgrade():
         sa.Column("expired_timestamp", sa.DateTime(), nullable=False),
         sa.Column("ver_config_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("pres_exch_id", sqlmodel.sql.sqltypes.GUID(), nullable=False),
-        sa.Column("presentation_request_satisfied", sa.Boolean(), nullable=False),
+        sa.Column("verified", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("uuid"),
     )
     op.create_index(

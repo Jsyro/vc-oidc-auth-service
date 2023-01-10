@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -10,6 +11,8 @@ from .models import (
     AuthSessionCreate,
     AuthSessionPatch,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class AuthSessionCRUD:
@@ -63,12 +66,11 @@ class AuthSessionCRUD:
     async def get_by_pres_exch_id(self, pres_exch_id: str) -> AuthSession:
         statement = select(AuthSession).where(AuthSession.pres_exch_id == pres_exch_id)
         results = await self.session.execute(statement=statement)
-        ver_conf = results.scalar_one_or_none()  # type: AuthSession | None
-
-        if ver_conf is None:
+        auth_session = results.scalar_one_or_none()  # type: AuthSession | None
+        if auth_session is None:
             raise HTTPException(
                 status_code=http_status.HTTP_404_NOT_FOUND,
                 detail="The auth_session hasn't been found!",
             )
 
-        return ver_conf
+        return auth_session

@@ -19,12 +19,12 @@ class VerificationConfigCRUD:
     async def create(self, data: VerificationConfigCreate) -> VerificationConfig:
         values = data.dict()
 
-        hero = VerificationConfig(**values)
-        self.session.add(hero)
+        ver_config = VerificationConfig(**values)
+        self.session.add(ver_config)
         await self.session.commit()
-        await self.session.refresh(hero)
+        await self.session.refresh(ver_config)
 
-        return hero
+        return ver_config
 
     async def get(self, ver_config_id: str) -> VerificationConfig:
         statement = select(VerificationConfig).where(
@@ -44,17 +44,17 @@ class VerificationConfigCRUD:
     async def patch(
         self, ver_config_id: str, data: VerificationConfigPatch
     ) -> VerificationConfig:
-        hero = await self.get(ver_config_id=ver_config_id)
+        ver_config = await self.get(ver_config_id=ver_config_id)
         values = data.dict(exclude_unset=True)
 
         for k, v in values.items():
-            setattr(hero, k, v)
+            setattr(ver_config, k, v)
 
-        self.session.add(hero)
+        self.session.add(ver_config)
         await self.session.commit()
-        await self.session.refresh(hero)
+        await self.session.refresh(ver_config)
 
-        return hero
+        return ver_config
 
     async def delete(self, ver_config_id: str) -> bool:
         statement = delete(VerificationConfig).where(

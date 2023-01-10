@@ -1,13 +1,13 @@
 import logging
 import os
 import time
+import uvicorn
 from pathlib import Path
 
-import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.config import settings
-
 from .routers import oidc
 from .routers import acapy_handler
 from .routers import presentation_request
@@ -42,7 +42,16 @@ app.include_router(
 app.include_router(acapy_handler.router, prefix="/webhooks", include_in_schema=False)
 app.include_router(presentation_request.router, include_in_schema=False)
 
-origins = settings.TRACTION_CORS_URLS.split(",")
+origins = ["*"]
+
+if origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.on_event("startup")

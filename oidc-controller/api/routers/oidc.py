@@ -39,6 +39,16 @@ async def post_authorize(request: Request):
     return {}
 
 
+@router.get(f"{ChallengePollUri}/{{pid}}")
+async def poll_pres_exch_complete(
+    pid: str, session: AsyncSession = Depends(get_async_session)
+):
+    auth_sessions = AuthSessionCRUD(session)
+    auth_session = await auth_sessions.get_by_pres_exch_id(pid)
+
+    return {"verified": auth_session.verified}
+
+
 @router.get(VerifiedCredentialAuthorizeUri, response_class=HTMLResponse)
 async def get_authorize(
     request: Request,
@@ -74,7 +84,7 @@ async def get_authorize(
     auth_session = await auth_sessions.create(new_auth_session)
 
     # QR CONTENTS
-    controller_host = "https://ad84-165-225-211-70.ngrok.io"
+    controller_host = "https://f34b-165-225-211-70.ngrok.io"
     url_to_message = (
         controller_host + "/url/pres_exch/" + str(auth_session.pres_exch_id)
     )
@@ -86,19 +96,31 @@ async def get_authorize(
 
     return f"""
     <html>
+        <script>
+        setInterval(function() {{
+            fetch('{controller_host}/vc/connect{ChallengePollUri}/{auth_session.pres_exch_id}')
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(err => console.log(err));
+        }}, 5000);
+
+        </script>
         <head>
             <title>Some HTML in here</title>
         </head>
         <body>
-            <h1>AUTHORIZATION REQUEST</h1>
+            <h1>AUTHORIZATION REQUEST</h1> 
 
             <p>Scan this QR code for a connectionless present-proof request</p>
             <p><img src="data:image/jpeg;base64,{image_contents}" alt="{image_contents}" width="300px" height="300px" /></p>
 
             <p> User waits on this screen until Proof has been presented to the vcauth service agent, then is redirected to</p>
             <a href="http://localhost:5201/vc/connect{AuthorizeCallbackUri}?pid={auth_session.uuid}">callback url (redirect to kc)</a>
+
+            <a href="http://localhost:5201/vc/connect/poll/{auth_session.pres_exch_id}">asda</a>
         </body>
     </html>
+
     """
 
 
@@ -124,7 +146,6 @@ async def get_authorize_callback(
         + "&state="
         + str(auth_session.request_parameters["state"])
     )
-    print(url)
     return f"""
     <html>
         <head>
