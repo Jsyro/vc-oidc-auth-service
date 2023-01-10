@@ -1,5 +1,5 @@
 from sqlmodel import Field
-from sqlalchemy import Column, select
+from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSON
 
 from api.core.models import BaseSQLModel

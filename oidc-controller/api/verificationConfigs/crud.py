@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import HTTPException
 from fastapi import status as http_status
 from sqlalchemy import delete, select
