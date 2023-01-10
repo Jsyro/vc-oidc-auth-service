@@ -170,9 +170,12 @@ async def post_token(
     auth_sessions = AuthSessionCRUD(session)
     auth_session = await auth_sessions.get(model.get("code"))
 
+    ver_configs = VerificationConfigCRUD(session)
+    ver_config = await ver_configs.get(auth_session.ver_config_id)
+
     presentation = client.get_presentation_request(auth_session.pres_exch_id)
 
-    claims = Token.get_claims(presentation, auth_session)
+    claims = Token.get_claims(presentation, auth_session, ver_config)
 
     token = Token(
         issuer="placeholder", audiences=["keycloak"], lifetime=10000, claims=claims

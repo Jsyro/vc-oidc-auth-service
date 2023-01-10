@@ -4,6 +4,7 @@ from typing import List, Dict
 from pydantic import BaseModel
 
 from ...authSessions.models import AuthSession
+from ...verificationConfigs.models import VerificationConfig
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,10 @@ class Token(BaseModel):
     claims: Dict[str, Claim]
 
     @classmethod
-    def get_claims(cls, pres_exch: Dict, auth_session: AuthSession) -> List["Claim"]:
+    def get_claims(
+        cls, pres_exch: Dict, auth_session: AuthSession, ver_config: VerificationConfig
+    ) -> List["Claim"]:
+        """Converts vc presentation values to oidc claims"""
         logger.debug(f">>> Token.get_claims")
         logger.info(pres_exch)
 
@@ -34,7 +38,13 @@ class Token(BaseModel):
         ]
 
         # subject claim
-        claims.append(Claim(type="sub", value="FROM_PROOF_REQUEST"))
+        logger.info(ver_config.subject_identifier)
+        logger.info(
+            auth_session.presentation_exchange["presentation"]["requested_proof"]
+        )
+        claims.append(
+            Claim(type="sub", value="FROM_PROOF_REQUEST")
+        )  # TODO, get this from presentation
         claims.append(
             Claim(type="nonce", value=auth_session.request_parameters["nonce"])
         )
@@ -51,26 +61,23 @@ class Token(BaseModel):
                 claims.append(Claim(type=requested_attr["name"], value=v["raw"]))
             return {c.type: c for c in claims}
 
+    # renames and calculates dict members appropriate to https://openid.net/specs/openid-connect-core-1_0.html#IDToken
+    # and
+    # https://github.com/OpenIDC/pyoidc/blob/26ea5121239dad03c5c5551cca149cb984df1ec9/src/oic/oic/message.py#L720
+
     def idtoken_dict(self, nonce: str) -> Dict:
+        """Converts oidc claims to IdToken attribute names"""
+
         result = {}
         for claim in self.claims.values():
             result[claim.type] = claim.value
 
-        result["sub"] = "1af58203-33fa-42a6-8628-a85472a9967e"
-        result["t_id"] = "132465e4-c57f-459f-8534-e30e78484f24"
+        result[
+            "sub"
+        ] = "1af58203-33fa-42a6-8628-a85472a9967e"  # TODO make this dependant on ver_config
+        result["t_id"] = "132465e4-c57f-459f-8534-e30e78484f24"  # what this do?
         result["exp"] = int(round(datetime.now().timestamp())) + self.lifetime
         result["aud"] = self.audiences
         result["nonce"] = nonce
 
         return result
-
-
-class IssueTokenService:
-    def issue_token(claims):
-        token = Token(
-            issuer="issuer",
-            audiences=["keycloak"],
-            lifetime=10000,
-        )
-
-    pass

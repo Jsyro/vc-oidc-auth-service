@@ -49,6 +49,10 @@ class GlobalConfig(BaseSettings):
         raw_resp = requests.get(NGROK_TUNNEL_HOST + "/api/tunnels")
         resp = json.loads(raw_resp.content)
         SELF_CONTROLLER_HOST_URL = resp["tunnels"][0]["public_url"]
+        print(
+            "loaded SELF_CONTROLLER_HOST_URL from NGROK_TUNNEL_HOST: "
+            + SELF_CONTROLLER_HOST_URL
+        )
 
     #
     ACAPY_PUBLIC_SERVICE_URL: str = os.environ.get("ACAPY_PUBLIC_SERVICE_URL")
@@ -56,7 +60,12 @@ class GlobalConfig(BaseSettings):
     if not ACAPY_PUBLIC_SERVICE_URL and ACAPY_NGROK_TUNNEL_HOST:
         raw_resp = requests.get(ACAPY_NGROK_TUNNEL_HOST + "/api/tunnels")
         resp = json.loads(raw_resp.content)
-        ACAPY_PUBLIC_SERVICE_URL = resp["tunnels"][0]["public_url"]
+        https_tunnels = [t for t in resp["tunnels"] if t["proto"] == "https"]
+        ACAPY_PUBLIC_SERVICE_URL = https_tunnels[0]["public_url"]
+        print(
+            "loaded ACAPY_PUBLIC_SERVICE_URL from ACAPY_NGROK_TUNNEL_HOST: "
+            + ACAPY_PUBLIC_SERVICE_URL
+        )
 
     # application connection is async
     # fmt: off

@@ -29,16 +29,16 @@ async def post_topic(
     match topic:
         case "present_proof":
             webhook_body = await _parse_webhook_body(request)
-            logger.info(webhook_body)
+            logger.info(
+                f">>>> pres_exch_id: {webhook_body['presentation_exchange_id']}"
+            )
             auth_sessions = AuthSessionCRUD(session)
             auth_session: AuthSession = await auth_sessions.get_by_pres_exch_id(
                 webhook_body["presentation_exchange_id"]
             )
             if webhook_body["state"] == "presentation_received":
-
-                logger.info("GOT A RESPONSE, TIME TO VERIFY")
-                resp = client.verify_presentation(auth_session.pres_exch_id)
-                logger.info(resp)
+                logger.info("GOT A PRESENTATION, TIME TO VERIFY")
+                client.verify_presentation(auth_session.pres_exch_id)
             if webhook_body["state"] == "verified":
                 logger.info("VERIFIED")
                 # update presentation_exchange record
