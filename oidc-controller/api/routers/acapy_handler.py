@@ -42,7 +42,7 @@ async def post_topic(
             if webhook_body["state"] == "verified":
                 logger.info("VERIFIED")
                 # update presentation_exchange record
-                auth_session.presentation_request_satisfied = True
+                auth_session.verified = True
                 auth_session.presentation_exchange = webhook_body
                 await auth_sessions.patch(
                     auth_session.uuid, AuthSessionPatch(**auth_session.dict())
