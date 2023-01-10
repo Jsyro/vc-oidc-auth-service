@@ -1,5 +1,8 @@
 import logging
 import os
+import requests
+import json
+
 from enum import Enum
 from functools import lru_cache
 from typing import Optional
@@ -38,6 +41,14 @@ class GlobalConfig(BaseSettings):
     PSQL_ADMIN_PASS: str = os.environ.get(
         "OIDC_CONTROLLER_DB_ADMIN_PWD", "oidccontrolleradminpass"
     )
+
+    SELF_CONTROLLER_HOST_URL: str = os.environ.get("SELF_CONTROLLER_HOST_URL")
+
+    NGROK_TUNNEL_HOST: str = os.environ.get("NGROK_TUNNEL_HOST")
+    if not SELF_CONTROLLER_HOST_URL and NGROK_TUNNEL_HOST:
+        raw_resp = requests.get(NGROK_TUNNEL_HOST + "/api/tunnels")
+        resp = json.loads(raw_resp.content)
+        SELF_CONTROLLER_HOST_URL = resp["tunnels"][0]["public_url"]
 
     # application connection is async
     # fmt: off

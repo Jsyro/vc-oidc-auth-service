@@ -13,7 +13,7 @@ import qrcode
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..db.session import get_async_session
-
+from ..core.config import settings
 
 from ..core.acapy.client import AcapyClient
 from ..core.oidc.issue_token_service import Token
@@ -84,7 +84,7 @@ async def get_authorize(
     auth_session = await auth_sessions.create(new_auth_session)
 
     # QR CONTENTS
-    controller_host = "https://f34b-165-225-211-70.ngrok.io"
+    controller_host = settings.SELF_CONTROLLER_HOST_URL
     url_to_message = (
         controller_host + "/url/pres_exch/" + str(auth_session.pres_exch_id)
     )
@@ -152,6 +152,7 @@ async def get_authorize_callback(
             <title>Resulting redirect</title>
         </head>
         <body>
+            <p>The presentation is {"" if auth_session.verified else "NOT"} VERIFIED</p>
             <a href="{url}">{url}</a>
         </body>
     </html>
