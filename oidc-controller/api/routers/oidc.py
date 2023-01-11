@@ -43,6 +43,8 @@ async def post_authorize(request: Request):
 async def poll_pres_exch_complete(
     pid: str, session: AsyncSession = Depends(get_async_session)
 ):
+    """Called by authorize webpage to see if request is verified and token issuance can proceed."""
+
     auth_sessions = AuthSessionCRUD(session)
     auth_session = await auth_sessions.get_by_pres_exch_id(pid)
 
@@ -128,7 +130,7 @@ async def get_authorize_callback(
     pid: str,
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Called by oidc platform."""
+    """Called by Authorize page when verification is complete"""
     logger.debug(f">>> get_authorize_callback")
     logger.debug(f"payload ={request}")
 
@@ -162,11 +164,13 @@ async def post_token(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
 ):
-    """Called by oidc platform."""
+    """Called by oidc platform to retreive token contents"""
     logger.info(f">>> post_token")
     form = await request.form()
     model = AccessTokenRequest().from_dict(form._dict)
+
     client = AcapyClient()
+
     auth_sessions = AuthSessionCRUD(session)
     auth_session = await auth_sessions.get(model.get("code"))
 

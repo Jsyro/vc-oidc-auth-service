@@ -39,9 +39,6 @@ class Token(BaseModel):
 
         # subject claim
         logger.info(ver_config.subject_identifier)
-        logger.info(
-            auth_session.presentation_exchange["presentation"]["requested_proof"]
-        )
         claims.append(
             Claim(type="sub", value="FROM_PROOF_REQUEST")
         )  # TODO, get this from presentation
@@ -52,7 +49,6 @@ class Token(BaseModel):
         for requested_attr in auth_session.presentation_exchange[
             "presentation_request"
         ]["requested_attributes"].values():
-
             # loop through each value and put it in token as a claim
             revealed_attrs: Dict = auth_session.presentation_exchange["presentation"][
                 "requested_proof"
@@ -68,7 +64,7 @@ class Token(BaseModel):
     def idtoken_dict(self, nonce: str) -> Dict:
         """Converts oidc claims to IdToken attribute names"""
 
-        result = {}
+        result = {}  # nest VC attribute claims under the key=pres_req_conf_id
         for claim in self.claims.values():
             result[claim.type] = claim.value
 
