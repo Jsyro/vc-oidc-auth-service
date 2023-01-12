@@ -32,7 +32,7 @@ class AcapyClient:
         logger.debug(f">>> get_wallet_token")
         resp_raw = requests.post(
             self.acapy_host + f"/multitenancy/wallet/{self.wallet_id}/token",
-            data={"wallet_key": self.wallet_key},
+            json={"wallet_key": self.wallet_key},
             headers={settings.ACAPY_WEBHOOK_URL_API_KEY_NAME: self.acapy_admin_api_key},
         )
         assert (
