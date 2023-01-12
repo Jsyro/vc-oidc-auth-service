@@ -16,9 +16,11 @@ PRESENT_PROOF_RECORDS = "/present-proof/records"
 
 class AcapyClient:
     wallet_id = settings.ACAPY_WALLET_ID
+    wallet_key = settings.ACAPY_WALLET_KEY
     acapy_host = settings.ACAPY_ADMIN_URL
     acapy_admin_api_key = settings.ACAPY_ADMIN_URL_API_KEY
     service_endpoint = settings.ACAPY_PUBLIC_SERVICE_URL
+
     wallet_token: str = None
 
     def __init__(self):
@@ -30,7 +32,7 @@ class AcapyClient:
         logger.debug(f">>> get_wallet_token")
         resp_raw = requests.post(
             self.acapy_host + f"/multitenancy/wallet/{self.wallet_id}/token",
-            data={"wallet_key": "sample_key"},
+            data={"wallet_key": self.wallet_key},
             headers={settings.ACAPY_WEBHOOK_URL_API_KEY_NAME: self.acapy_admin_api_key},
         )
         assert (

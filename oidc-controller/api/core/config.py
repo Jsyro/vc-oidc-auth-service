@@ -82,6 +82,7 @@ class GlobalConfig(BaseSettings):
     )
     ACAPY_WEBHOOK_URL_API_KEY_NAME = "x-api-key"
     ACAPY_WALLET_ID: str = os.environ.get("ACAPY_WALLET_ID")
+    ACAPY_WALLET_KEY: str = os.environ.get("ACAPY_WALLET_KEY", "random-key")
 
     ACAPY_ENDORSER_PUBLIC_DID: str = os.environ.get("ACAPY_ENDORSER_PUBLIC_DID")
     ACAPY_GENESIS_URL: str = os.environ.get("ACAPY_GENESIS_URL")
