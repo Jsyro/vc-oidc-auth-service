@@ -1086,8 +1086,8 @@
       "config": {
         "clientId": "keycloak",
         "forwardParameters": "pres_req_conf_id",
-        "tokenUrl": "http://localhost:5201/vc/connect/token",
-        "authorizationUrl": "http://oidc_controller:5000/vc/connect/authorize",
+        "tokenUrl": "http://oidc_controller:5000/vc/connect/token",
+        "authorizationUrl": "http://localhost:5201/vc/connect/authorize",
         "clientAuthMethod": "client_secret_post",
         "syncMode": "LEGACY",
         "clientSecret": "**********",
